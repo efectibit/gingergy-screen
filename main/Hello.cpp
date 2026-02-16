@@ -155,13 +155,6 @@ extern "C" void app_main(void) {
 	_lock_init(&lvgl_api_lock);
 	xTaskCreate(lvgl_port_task, "LVGL", 1024 * 5, NULL, 2, NULL);
 
-	// PRUEBA DE FUEGO: Llenar la pantalla de ROJO puro sin LVGL
-	uint16_t *fb;
-	esp_lcd_rgb_panel_get_frame_buffer(panel_handle, 1, (void**)&fb);
-	for(int i = 0; i < LCD_H_RES * LCD_V_RES; i++) {
-		fb[i] = 0xF800; // Rojo en RGB565
-	}
-
 	_lock_acquire(&lvgl_api_lock);
 	create_demo_ui(display);
 	_lock_release(&lvgl_api_lock);
