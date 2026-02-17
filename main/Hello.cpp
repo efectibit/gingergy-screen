@@ -15,7 +15,7 @@ static const char *TAG = "Sunton_S3";
 // Parámetros Sunton 7"
 #define LCD_H_RES              800
 #define LCD_V_RES              480
-#define LCD_PIXEL_CLOCK_HZ     (10 * 1000 * 1000)
+#define LCD_PIXEL_CLOCK_HZ     (12 * 1000 * 1000)
 
 #define PIN_NUM_BK_LIGHT       2
 #define PIN_NUM_LCD_RST        38
@@ -169,10 +169,109 @@ extern "C" void app_main() {
 
 void create_demo_ui(lv_display_t *disp) {
 	lv_obj_t *scr = lv_display_get_screen_active(disp);
-	lv_obj_set_style_bg_color(scr, lv_palette_main(LV_PALETTE_BLUE), 0);
+	lv_obj_set_style_bg_color(scr, lv_color_hex(0xEEEEEE), 0); // Fondo gris claro
 
-	lv_obj_t *label = lv_label_create(scr);
-	lv_label_set_text(label, "S3 Nativo: OK");
-	lv_obj_set_style_text_color(label, lv_color_black(), 0);
-	lv_obj_center(label);
+	// --- 1. FILA SUPERIOR: ESTADO DE TERMINALES ---
+	lv_obj_t *top_cont = lv_obj_create(scr);
+	lv_obj_set_size(top_cont, 800, 100);
+	lv_obj_align(top_cont, LV_ALIGN_TOP_MID, 0, 10);
+	lv_obj_set_style_bg_opa(top_cont, 0, 0);
+	lv_obj_set_style_border_width(top_cont, 0, 0);
+	lv_obj_set_flex_flow(top_cont, LV_FLEX_FLOW_ROW);
+	lv_obj_set_flex_align(top_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+	const char *ids[] = {"01", "02", "03", "04", "05", "06"};
+	lv_color_t colors[] = {lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_YELLOW),
+						   lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_BLUE),
+						   lv_palette_main(LV_PALETTE_GREEN), lv_palette_main(LV_PALETTE_BLUE)};
+
+	for (int i = 0; i < 6; i++) {
+		lv_obj_t *item = lv_obj_create(top_cont);
+		lv_obj_set_size(item, 80, 80);
+		lv_obj_set_style_bg_opa(item, 0, 0);
+		lv_obj_set_style_border_width(item, 0, 0);
+
+		lv_obj_t *icon = lv_label_create(item);
+		lv_label_set_text(icon, LV_SYMBOL_CHARGE);
+		lv_obj_set_style_text_font(icon, &lv_font_montserrat_24, 0);
+		lv_obj_set_style_text_color(icon, colors[i], 0);
+		lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 0);
+
+		lv_obj_t *lbl = lv_label_create(item);
+		lv_label_set_text(lbl, ids[i]);
+		lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, 0);
+	}
+
+	// --- 2. TÍTULO CENTRAL ---
+	lv_obj_t *term_title = lv_label_create(scr);
+	lv_label_set_text(term_title, "TERMINAL 05");
+	lv_obj_set_style_text_font(term_title, &lv_font_montserrat_18, 0);
+	lv_obj_align(term_title, LV_ALIGN_TOP_MID, 0, 120);
+
+	// --- 3. ARCO CENTRAL ---
+	lv_obj_t *arc = lv_arc_create(scr);
+	lv_obj_set_size(arc, 350, 350);
+	lv_arc_set_rotation(arc, 180);
+	lv_arc_set_bg_angles(arc, 0, 180);
+	lv_arc_set_value(arc, 50);
+	lv_obj_set_style_arc_width(arc, 8, LV_PART_MAIN);
+	lv_obj_set_style_arc_width(arc, 8, LV_PART_INDICATOR);
+	lv_obj_set_style_arc_color(arc, lv_color_black(), LV_PART_MAIN);
+	lv_obj_set_style_arc_color(arc, lv_color_black(), LV_PART_INDICATOR);
+	lv_obj_remove_style(arc, NULL, LV_PART_KNOB); // Quita el círculo del indicador
+	lv_obj_align(arc, LV_ALIGN_CENTER, 0, 100);
+
+	// --- 4. TIEMPO Y CONTROLES ---
+	lv_obj_t *time_main = lv_label_create(scr);
+	lv_label_set_text(time_main, "1:15");
+	lv_obj_set_style_text_font(time_main, &lv_font_montserrat_48, 0);
+	lv_obj_align(time_main, LV_ALIGN_CENTER, 0, 30);
+
+	lv_obj_t *time_sub = lv_label_create(scr);
+	lv_label_set_text(time_sub, "15 minutos");
+	lv_obj_align(time_sub, LV_ALIGN_CENTER, 0, 80);
+
+	// Botones "-" y "+"
+	lv_obj_t *btn_min = lv_button_create(scr);
+	lv_obj_set_size(btn_min, 60, 60);
+	lv_obj_align(btn_min, LV_ALIGN_CENTER, -100, 80);
+	lv_obj_set_style_bg_color(btn_min, lv_color_hex(0xBDC3C7), 0);
+	lv_obj_t *lbl_min = lv_label_create(btn_min);
+	lv_label_set_text(lbl_min, "-");
+	lv_obj_center(lbl_min);
+
+	lv_obj_t *btn_plus = lv_button_create(scr);
+	lv_obj_set_size(btn_plus, 60, 60);
+	lv_obj_align(btn_plus, LV_ALIGN_CENTER, 100, 80);
+	lv_obj_set_style_bg_color(btn_plus, lv_color_hex(0xBDC3C7), 0);
+	lv_obj_t *lbl_plus = lv_label_create(btn_plus);
+	lv_label_set_text(lbl_plus, "+");
+	lv_obj_center(lbl_plus);
+
+	// --- 5. BOTÓN USAR ---
+	lv_obj_t *btn_use = lv_button_create(scr);
+	lv_obj_set_size(btn_use, 180, 60);
+	lv_obj_align(btn_use, LV_ALIGN_BOTTOM_MID, 0, -50);
+	lv_obj_set_style_bg_color(btn_use, lv_color_hex(0xA3D9A5), 0); // Verde suave
+	lv_obj_set_style_border_width(btn_use, 2, 0);
+	lv_obj_set_style_border_color(btn_use, lv_color_black(), 0);
+
+	lv_obj_t *lbl_use = lv_label_create(btn_use);
+	lv_label_set_text(lbl_use, "USAR");
+	lv_obj_set_style_text_color(lbl_use, lv_color_black(), 0);
+	lv_obj_set_style_text_font(lbl_use, &lv_font_montserrat_22, 0);
+	lv_obj_center(lbl_use);
+
+	// Flechas laterales (Símbolos)
+	lv_obj_t *arrow_l = lv_label_create(scr);
+	lv_label_set_text(arrow_l, LV_SYMBOL_LEFT);
+	lv_obj_set_style_text_font(arrow_l, &lv_font_montserrat_48, 0);
+	lv_obj_set_style_text_color(arrow_l, lv_palette_main(LV_PALETTE_GREEN), 0);
+	lv_obj_align(arrow_l, LV_ALIGN_LEFT_MID, 40, 50);
+
+	lv_obj_t *arrow_r = lv_label_create(scr);
+	lv_label_set_text(arrow_r, LV_SYMBOL_RIGHT);
+	lv_obj_set_style_text_font(arrow_r, &lv_font_montserrat_48, 0);
+	lv_obj_set_style_text_color(arrow_r, lv_palette_main(LV_PALETTE_GREEN), 0);
+	lv_obj_align(arrow_r, LV_ALIGN_RIGHT_MID, -40, 50);
 }
