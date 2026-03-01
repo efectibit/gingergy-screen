@@ -1,0 +1,110 @@
+#include "App.hpp"
+#include "esp_log.h"
+
+static const char* TAG_APP = "App";
+
+// ─── Configuración de hardware (ajustar según instalación) ───────────────────
+// UART1 para RS232 Modbus — pines de ejemplo, ajustar según PCB
+static constexpr uart_port_t MODBUS_UART   = UART_NUM_1;
+static constexpr uint8_t     MODBUS_ADDR   = 0x01;
+static constexpr int         MODBUS_TX_PIN = 17;
+static constexpr int         MODBUS_RX_PIN = 18;
+
+// =============================================================================
+// Constructor
+// =============================================================================
+App::App(uint8_t numPoints)
+	: m_display()
+	, m_modbus(MODBUS_UART, MODBUS_ADDR, MODBUS_TX_PIN, MODBUS_RX_PIN)
+	, m_crypto()
+	, m_terminalBar(nullptr)
+	, m_selectionScreen(nullptr)
+	, m_paymentModal(nullptr)
+{
+	// Crear los ChargePoints (ids 1-based: 1..numPoints)
+	m_chargePoints.reserve(numPoints);
+	for (uint8_t i = 1; i <= numPoints; i++) {
+		m_chargePoints.emplace_back(i);
+	}
+	ESP_LOGI(TAG_APP, "App creada con %d puntos de carga", numPoints);
+}
+
+// =============================================================================
+// run() — Punto de entrada principal
+// =============================================================================
+void App::run() {
+	// 1. Inicializar panel físico
+	m_display.init();
+
+	// 2. Arrancar LVGL en Core 1; se llama buildUI() cuando LVGL esté listo
+	m_display.startGuiTask([this](lv_display_t* disp) {
+		this->buildUI(disp);
+	});
+
+	// app_main retorna → FreeRTOS sigue corriendo la tarea de LVGL
+}
+
+// =============================================================================
+// buildUI() — Construye la interfaz gráfica (llamado desde guiTaskFn)
+// =============================================================================
+void App::buildUI(lv_display_t* disp) {
+	lv_obj_t* scr = lv_display_get_screen_active(disp);
+	lv_obj_set_style_bg_color(scr, lv_color_hex(0xEEEEEE), 0);
+
+	// 1. Barra superior
+	m_terminalBar = new TerminalBar(m_chargePoints, [this](uint8_t id) {
+		this->onTerminalSelected(id);
+	});
+	m_terminalBar->build(scr);
+
+	// 2. Pantalla central (arco y tiempo)
+	m_selectionScreen = new TimeSelectionScreen([this](ChargePoint* cp) {
+		this->onTimeConfirmed(cp);
+	});
+	m_selectionScreen->build(scr);
+
+	// 3. (Modal se instanciará después)
+
+	ESP_LOGI(TAG_APP, "UI construida (TerminalBar + TimeSelectionScreen)");
+}
+
+// =============================================================================
+// Callbacks de navegación
+// =============================================================================
+void App::onTerminalSelected(uint8_t id) {
+	if (id == 0 || id > m_chargePoints.size()) return;
+
+	ChargePoint* cp = &m_chargePoints[id - 1];
+
+	if (!cp->isAvailable()) {
+		ESP_LOGW(TAG_APP, "El terminal %d no está disponible", id);
+		return; // Ignorar toques en terminales ocupados/rotos
+	}
+
+	ESP_LOGI(TAG_APP, "Terminal %d seleccionado", id);
+
+	m_terminalBar->setActive(id);
+	m_selectionScreen->setActivePoint(cp);
+}
+
+void App::onTimeConfirmed(ChargePoint* cp) {
+	if (!cp) return;
+	ESP_LOGI(TAG_APP, "Tiempo confirmado: terminal %d, %d min",
+			 cp->getId(), cp->getSelectedMinutes());
+}
+
+void App::onPaymentValidated(ChargePoint* cp) {
+	if (!cp) return;
+	ESP_LOGI(TAG_APP, "Pago validado: enviando comando Modbus para terminal %d",
+			 cp->getId());
+}
+
+void App::syncChargePointStatus() {
+	// Por implementar cuando ModbusClient esté completo
+}
+
+extern "C" void app_main() {
+	// 6 puntos de carga gestionados por la placa controladora
+	static App app(6);
+	app.run();
+}
