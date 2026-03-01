@@ -15,6 +15,7 @@ void TerminalBar::build(lv_obj_t* scr) {
 	m_container = lv_obj_create(scr);
 	lv_obj_set_size(m_container, 800, 100);
 	lv_obj_align(m_container, LV_ALIGN_TOP_MID, 0, 10);
+	lv_obj_clear_flag(m_container, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_style_bg_opa(m_container, 0, 0);
 	lv_obj_set_style_border_width(m_container, 0, 0);
 	lv_obj_set_flex_flow(m_container, LV_FLEX_FLOW_ROW);

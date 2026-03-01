@@ -49,6 +49,7 @@ void App::run() {
 // =============================================================================
 void App::buildUI(lv_display_t* disp) {
 	lv_obj_t* scr = lv_display_get_screen_active(disp);
+	lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_style_bg_color(scr, lv_color_hex(0xEEEEEE), 0);
 
 	// 1. Barra superior
