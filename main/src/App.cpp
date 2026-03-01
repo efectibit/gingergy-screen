@@ -63,9 +63,12 @@ void App::buildUI(lv_display_t* disp) {
 	});
 	m_selectionScreen->build(scr);
 
-	// 3. (Modal se instanciará después)
+	// 3. Modal de pago (oculto inicialmente)
+	m_paymentModal = new PaymentModal(&m_crypto, [this](ChargePoint* cp) {
+		this->onPaymentValidated(cp);
+	});
 
-	ESP_LOGI(TAG_APP, "UI construida (TerminalBar + TimeSelectionScreen)");
+	ESP_LOGI(TAG_APP, "UI construida (TerminalBar + TimeSelectionScreen + PaymentModal)");
 }
 
 // =============================================================================
@@ -91,12 +94,20 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 	if (!cp) return;
 	ESP_LOGI(TAG_APP, "Tiempo confirmado: terminal %d, %d min",
 			 cp->getId(), cp->getSelectedMinutes());
+
+	lv_obj_t* scr = lv_display_get_screen_active(m_display.getDisplay());
+	m_paymentModal->show(scr, cp);
 }
 
 void App::onPaymentValidated(ChargePoint* cp) {
 	if (!cp) return;
 	ESP_LOGI(TAG_APP, "Pago validado: enviando comando Modbus para terminal %d",
 			 cp->getId());
+
+	m_paymentModal->hide();
+	cp->resetTime();
+	m_terminalBar->refreshIcon(cp->getId());
+	m_selectionScreen->updateDisplay();
 }
 
 void App::syncChargePointStatus() {

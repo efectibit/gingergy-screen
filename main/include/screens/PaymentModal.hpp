@@ -72,6 +72,7 @@ private:
 	// --- Widgets LVGL ---
 	lv_obj_t* m_modal;        ///< Contenedor raíz del modal
 	lv_obj_t* m_lblTitle;
+	lv_obj_t* m_lblPrice;
 	lv_obj_t* m_qrCanvas;    ///< Canvas donde QRRenderer dibuja el QR
 	lv_obj_t* m_lblPinField; ///< Muestra "* * * * * *" mientras el usuario escribe
 	lv_obj_t* m_lblError;
