@@ -2,7 +2,6 @@
 #include <functional>
 #include "lvgl.h"
 #include "../ChargePoint.hpp"
-#include "QRRenderer.hpp"
 
 // Forward declaration para evitar inclusión circular
 class CryptoPayment;
@@ -62,6 +61,7 @@ private:
 	// --- Callbacks LVGL (static) ---
 	static void onKeyPressedCb    (lv_event_t* e);
 	static void onValidatePressedCb(lv_event_t* e);
+	static void onCancelPressedCb(lv_event_t* e);
 
 	// --- Helpers ---
 	void appendPinChar(char c);
@@ -72,12 +72,14 @@ private:
 	// --- Widgets LVGL ---
 	lv_obj_t* m_modal;        ///< Contenedor raíz del modal
 	lv_obj_t* m_lblTitle;
+	lv_obj_t* m_lblMinutes;   ///< Muestra los minutos ("120 minutos")
 	lv_obj_t* m_lblPrice;
 	lv_obj_t* m_qrCanvas;    ///< Canvas donde QRRenderer dibuja el QR
 	lv_obj_t* m_lblPinField; ///< Muestra "* * * * * *" mientras el usuario escribe
 	lv_obj_t* m_lblError;
 	lv_obj_t* m_btnValidate;
-	lv_obj_t* m_numpadBtns[12];
+	lv_obj_t* m_btnCancel;
+	lv_obj_t* m_numpadMatrix;
 
 	static constexpr uint8_t PIN_MAX_LEN = 6;
 	char    m_pinBuffer[PIN_MAX_LEN + 1];

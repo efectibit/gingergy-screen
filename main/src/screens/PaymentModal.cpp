@@ -1,24 +1,25 @@
 #include "screens/PaymentModal.hpp"
 #include "../components/crypto_payment/include/CryptoPayment.h"
 #include <stdio.h>
+#include <string.h>
 
 PaymentModal::PaymentModal(CryptoPayment* crypto,
 						   std::function<void(ChargePoint*)> onValidated)
 	: m_modal(nullptr)
 	, m_lblTitle(nullptr)
+	, m_lblMinutes(nullptr)
 	, m_lblPrice(nullptr)
 	, m_qrCanvas(nullptr)
 	, m_lblPinField(nullptr)
 	, m_lblError(nullptr)
 	, m_btnValidate(nullptr)
+	, m_btnCancel(nullptr)
+	, m_numpadMatrix(nullptr)
 	, m_pinLen(0)
 	, m_activePoint(nullptr)
 	, m_crypto(crypto)
 	, m_onValidated(onValidated)
 {
-	for (int i = 0; i < 12; i++) {
-		m_numpadBtns[i] = nullptr;
-	}
 	m_pinBuffer[0] = '\0';
 }
 
@@ -30,13 +31,16 @@ void PaymentModal::show(lv_obj_t* scr, ChargePoint* cp) {
 	m_modal = lv_obj_create(scr);
 	lv_obj_set_size(m_modal, 800, 480);
 	lv_obj_center(m_modal);
+	lv_obj_set_style_radius(m_modal, 0, 0); // no rounded corners
+	lv_obj_set_style_border_width(m_modal, 0, 0); // no border
+	lv_obj_set_style_shadow_width(m_modal, 0, 0); // no shadow
 	lv_obj_set_style_bg_color(m_modal, lv_color_black(), 0);
 	lv_obj_set_style_bg_opa(m_modal, LV_OPA_70, 0);
 	lv_obj_clear_flag(m_modal, LV_OBJ_FLAG_SCROLLABLE);
 
 	// Contenedor blanco central
 	lv_obj_t* box = lv_obj_create(m_modal);
-	lv_obj_set_size(box, 560, 380);
+	lv_obj_set_size(box, 600, 420);
 	lv_obj_center(box);
 	lv_obj_set_style_bg_color(box, lv_color_white(), 0);
 	lv_obj_set_style_radius(box, 15, 0);
@@ -44,70 +48,107 @@ void PaymentModal::show(lv_obj_t* scr, ChargePoint* cp) {
 	lv_obj_set_style_border_width(box, 4, 0);
 	lv_obj_clear_flag(box, LV_OBJ_FLAG_SCROLLABLE);
 
-	// Título
+	// --- Parte Superior: Título ---
 	m_lblTitle = lv_label_create(box);
 	lv_label_set_text_fmt(m_lblTitle, "START CHARGING - TERMINAL %02d", cp->getId());
 	lv_obj_set_style_text_font(m_lblTitle, &lv_font_montserrat_22, 0);
 	lv_obj_align(m_lblTitle, LV_ALIGN_TOP_MID, 0, 10);
 
-	// Calcular precio (ejemplo: 0.50 por cada 15 min)
+	// --- Columna Izquierda: Información y QR ---
+	m_lblMinutes = lv_label_create(box);
+	lv_label_set_text_fmt(m_lblMinutes, "%d minutos", cp->getSelectedMinutes());
+	lv_obj_set_style_text_font(m_lblMinutes, &lv_font_montserrat_22, 0);
+	lv_obj_align(m_lblMinutes, LV_ALIGN_TOP_LEFT, 50, 60);
+
 	float price = (cp->getSelectedMinutes() / 15.0f) * 0.50f;
 	m_lblPrice = lv_label_create(box);
 	lv_label_set_text_fmt(m_lblPrice, "S/ %.2f", price);
-	lv_obj_set_style_text_font(m_lblPrice, &lv_font_montserrat_24, 0);
-	lv_obj_align(m_lblPrice, LV_ALIGN_TOP_LEFT, 40, 60);
+	lv_obj_set_style_text_font(m_lblPrice, &lv_font_montserrat_32, 0);
+	lv_obj_align_to(m_lblPrice, m_lblMinutes, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
 	// Generar Payload y QR
-	uint8_t payload[256];
-	size_t payloadLen = 0;
-	if (m_crypto->generatePayload(cp->getId(), cp->getSelectedMinutes(), payload, sizeof(payload), payloadLen)) {
-		m_qrCanvas = QRRenderer::render(box, payload, payloadLen, 40, 100, 4);
-	}
+	lv_color_t bg_color = lv_palette_lighten(LV_PALETTE_LIGHT_BLUE, 5);
+	lv_color_t fg_color = lv_palette_darken(LV_PALETTE_BLUE, 4);
+
+	m_qrCanvas = lv_qrcode_create(box);
+	lv_qrcode_set_size(m_qrCanvas, 150);
+	lv_qrcode_set_dark_color(m_qrCanvas, fg_color);
+	lv_qrcode_set_light_color(m_qrCanvas, bg_color);
+
+	/*Set QR data*/
+	const uint8_t data[] = {0, 1, 2, 3, 4, 5, 6, 7};
+	lv_qrcode_update(m_qrCanvas, data, sizeof(data));
+	lv_obj_align(m_qrCanvas, LV_ALIGN_LEFT_MID, 50, 14);
+
+	/*Add a border with bg_color*/
+	lv_obj_set_style_border_color(m_qrCanvas, lv_color_black(), 0);
+	lv_obj_set_style_border_width(m_qrCanvas, 5, 0);
 
 	// Label bajo el QR
 	lv_obj_t* lblScan = lv_label_create(box);
 	lv_label_set_text(lblScan, "SCAN TO PAY");
 	lv_obj_set_style_text_font(lblScan, &lv_font_montserrat_16, 0);
-	lv_obj_align(lblScan, LV_ALIGN_TOP_LEFT, 60, 270);
+	lv_obj_align_to(lblScan, m_qrCanvas, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
 
-	// Etiqueta ENTER PIN y campo de PIN
+	// --- Columna Derecha: Teclado y PIN ---
 	lv_obj_t* lblEnterPin = lv_label_create(box);
-	lv_label_set_text(lblEnterPin, "ENTER PIN");
-	lv_obj_set_style_text_font(lblEnterPin, &lv_font_montserrat_14, 0);
-	lv_obj_align(lblEnterPin, LV_ALIGN_TOP_RIGHT, -140, 65);
+	lv_label_set_text(lblEnterPin, "ENTER PIN:");
+	lv_obj_set_style_text_font(lblEnterPin, &lv_font_montserrat_20, 0);
+	lv_obj_align(lblEnterPin, LV_ALIGN_TOP_RIGHT, -120, 50);
 
 	m_lblPinField = lv_label_create(box);
 	lv_label_set_text(m_lblPinField, "");
-	lv_obj_set_size(m_lblPinField, 120, 30);
-	lv_obj_set_style_bg_color(m_lblPinField, lv_color_hex(0xE0F7FA), 0);
+	lv_obj_set_size(m_lblPinField, 220, 40);
+	lv_obj_set_style_bg_color(m_lblPinField, lv_color_hex(0xB2EBF2), 0); // Cian claro
 	lv_obj_set_style_bg_opa(m_lblPinField, LV_OPA_COVER, 0);
 	lv_obj_set_style_text_align(m_lblPinField, LV_TEXT_ALIGN_CENTER, 0);
-	lv_obj_set_style_text_font(m_lblPinField, &lv_font_montserrat_20, 0);
-	lv_obj_set_style_radius(m_lblPinField, 5, 0);
-	lv_obj_align(m_lblPinField, LV_ALIGN_TOP_RIGHT, -20, 60);
+	lv_obj_set_style_text_font(m_lblPinField, &lv_font_montserrat_24, 0);
+	lv_obj_set_style_border_color(m_lblPinField, lv_color_black(), 0);
+	lv_obj_set_style_border_width(m_lblPinField, 1, 0);
+	// Para alinear verticalmente el texto en LVGL se suele usar padding o flex, usaremos padding temporal
+	lv_obj_set_style_pad_top(m_lblPinField, 5, 0);
+	lv_obj_align_to(m_lblPinField, lblEnterPin, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
 
-	// Teclado numérico
+	// Construir la matriz de botones
 	buildNumpad();
-	lv_obj_align(lv_obj_get_parent(m_numpadBtns[0]), LV_ALIGN_TOP_RIGHT, -20, 100);
+	lv_obj_align_to(m_numpadMatrix, m_lblPinField, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
 	// Error label (oculto por defecto)
 	m_lblError = lv_label_create(box);
 	lv_label_set_text(m_lblError, "");
 	lv_obj_set_style_text_color(m_lblError, lv_palette_main(LV_PALETTE_RED), 0);
-	lv_obj_align(m_lblError, LV_ALIGN_BOTTOM_MID, 0, -60);
+	// Alineamos cerca del bottom
+	lv_obj_align(m_lblError, LV_ALIGN_BOTTOM_MID, 0, -80);
 
-	// Botón Validate
+	// --- Parte Inferior: Botones CANCELAR y VALIDAR ---
+	m_btnCancel = lv_button_create(box);
+	lv_obj_set_size(m_btnCancel, 200, 50);
+	lv_obj_align(m_btnCancel, LV_ALIGN_BOTTOM_LEFT, 40, -10);
+	lv_obj_set_style_bg_color(m_btnCancel, lv_color_hex(0xE0E0E0), 0);
+	lv_obj_set_style_border_width(m_btnCancel, 2, 0);
+	lv_obj_set_style_border_color(m_btnCancel, lv_color_black(), 0);
+	lv_obj_set_style_radius(m_btnCancel, 0, 0);
+
+	lv_obj_t* lblCancel = lv_label_create(m_btnCancel);
+	lv_label_set_text(lblCancel, "CANCELAR");
+	lv_obj_set_style_text_font(lblCancel, &lv_font_montserrat_20, 0);
+	lv_obj_set_style_text_color(lblCancel, lv_color_black(), 0);
+	lv_obj_center(lblCancel);
+	lv_obj_add_event_cb(m_btnCancel, onCancelPressedCb, LV_EVENT_CLICKED, this);
+
 	m_btnValidate = lv_button_create(box);
 	lv_obj_set_size(m_btnValidate, 200, 50);
-	lv_obj_align(m_btnValidate, LV_ALIGN_BOTTOM_MID, 0, -10);
-	lv_obj_set_style_bg_color(m_btnValidate, lv_palette_main(LV_PALETTE_LIGHT_BLUE), 0);
-	lv_obj_set_style_radius(m_btnValidate, 8, 0);
+	lv_obj_align(m_btnValidate, LV_ALIGN_BOTTOM_RIGHT, -40, -10);
+	lv_obj_set_style_bg_color(m_btnValidate, lv_color_hex(0xA3D9A5), 0);
+	lv_obj_set_style_border_width(m_btnValidate, 2, 0);
+	lv_obj_set_style_border_color(m_btnValidate, lv_color_black(), 0);
+	lv_obj_set_style_radius(m_btnValidate, 0, 0);
 
 	lv_obj_t* lblVal = lv_label_create(m_btnValidate);
-	lv_label_set_text(lblVal, "VALIDATE PIN");
-	lv_obj_set_style_text_font(lblVal, &lv_font_montserrat_18, 0);
+	lv_label_set_text(lblVal, "VALIDAR");
+	lv_obj_set_style_text_font(lblVal, &lv_font_montserrat_20, 0);
+	lv_obj_set_style_text_color(lblVal, lv_color_black(), 0);
 	lv_obj_center(lblVal);
-
 	lv_obj_add_event_cb(m_btnValidate, onValidatePressedCb, LV_EVENT_CLICKED, this);
 
 	clearPin();
@@ -119,64 +160,67 @@ void PaymentModal::hide() {
 		m_modal = nullptr;
 	}
 	m_activePoint = nullptr;
+	m_lblTitle = nullptr;
+	m_lblMinutes = nullptr;
+	m_lblPrice = nullptr;
+	m_qrCanvas = nullptr;
+	m_lblPinField = nullptr;
+	m_lblError = nullptr;
+	m_btnValidate = nullptr;
+	m_btnCancel = nullptr;
+	m_numpadMatrix = nullptr;
+
 	clearPin();
 }
 
+static const char * btnm_map[] = {
+	"7", "8", "9", "\n",
+	"4", "5", "6", "\n",
+	"1", "2", "3", "\n",
+	"0", LV_SYMBOL_BACKSPACE, ""
+};
+
 void PaymentModal::buildNumpad() {
-	// The parent is the box, we will create a grid or simple flex container
-	lv_obj_t* numpadCont = lv_obj_create(lv_obj_get_child(m_modal, 0));
-	lv_obj_set_size(numpadCont, 220, 160);
-	lv_obj_set_style_bg_opa(numpadCont, 0, 0);
-	lv_obj_set_style_border_width(numpadCont, 0, 0);
-	lv_obj_set_style_pad_all(numpadCont, 0, 0);
-	lv_obj_clear_flag(numpadCont, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_t* parent = lv_obj_get_child(m_modal, 0); // box
 
-	const char* keys[12] = {
-		"1", "2", "3",
-		"4", "5", "6",
-		"7", "8", "9",
-		"DEL", "0", "OK"
-	};
+	m_numpadMatrix = lv_buttonmatrix_create(parent);
+	lv_buttonmatrix_set_map(m_numpadMatrix, btnm_map);
 
-	int btnWidth = 60;
-	int btnHeight = 35;
-	int pad = 10;
+	// Configuración según el código de ejemplo del usuario
+	// Hacer el "0" el doble de ancho que "backspace" (están en la fila 3, botones 0 y 1)
+	// Map = fila 0: 0,1,2 | fila 1: 3,4,5 | fila 2: 6,7,8 | fila 3: 9,10.
+	lv_buttonmatrix_set_button_width(m_numpadMatrix, 9, 2); // Botón 9 es el "0"
 
-	for (int i = 0; i < 12; i++) {
-		int row = i / 3;
-		int col = i % 3;
+	// Estilizar matriz para que parezca blanca con bordes
+	lv_obj_set_style_bg_opa(m_numpadMatrix, 0, LV_PART_MAIN);
+	lv_obj_set_style_border_width(m_numpadMatrix, 0, LV_PART_MAIN);
 
-		m_numpadBtns[i] = lv_button_create(numpadCont);
-		lv_obj_set_size(m_numpadBtns[i], btnWidth, btnHeight);
-		lv_obj_set_pos(m_numpadBtns[i], col * (btnWidth + pad), row * (btnHeight + pad));
-		lv_obj_set_style_bg_color(m_numpadBtns[i], lv_color_white(), 0);
-		lv_obj_set_style_border_color(m_numpadBtns[i], lv_color_black(), 0);
-		lv_obj_set_style_border_width(m_numpadBtns[i], 2, 0);
-		lv_obj_set_style_radius(m_numpadBtns[i], 10, 0);
+	// Ajustes de tamaño y botones
+	lv_obj_set_size(m_numpadMatrix, 240, 200);
 
-		lv_obj_t* lbl = lv_label_create(m_numpadBtns[i]);
-		lv_label_set_text(lbl, keys[i]);
-		lv_obj_set_style_text_color(lbl, lv_color_black(), 0);
-		lv_obj_center(lbl);
+	// Estilos de los botones
+	lv_obj_set_style_bg_color(m_numpadMatrix, lv_color_white(), LV_PART_ITEMS);
+	lv_obj_set_style_border_color(m_numpadMatrix, lv_color_black(), LV_PART_ITEMS);
+	lv_obj_set_style_border_width(m_numpadMatrix, 1, LV_PART_ITEMS);
+	lv_obj_set_style_text_color(m_numpadMatrix, lv_color_black(), LV_PART_ITEMS);
+	lv_obj_set_style_text_font(m_numpadMatrix, &lv_font_montserrat_32, LV_PART_ITEMS);
 
-		lv_obj_add_event_cb(m_numpadBtns[i], onKeyPressedCb, LV_EVENT_CLICKED, this);
-		// Store the char or action in user_data
-		lv_obj_set_user_data(m_numpadBtns[i], (void*)(uintptr_t)keys[i][0]); // solo el primer char ('1', 'D', 'O')
-	}
+	lv_obj_add_event_cb(m_numpadMatrix, onKeyPressedCb, LV_EVENT_VALUE_CHANGED, this);
 }
 
 void PaymentModal::onKeyPressedCb(lv_event_t* e) {
 	auto* self = static_cast<PaymentModal*>(lv_event_get_user_data(e));
-	lv_obj_t* btn = (lv_obj_t*)lv_event_get_target(e);
-	char action = (char)(uintptr_t)lv_obj_get_user_data(btn);
+	lv_obj_t* obj = (lv_obj_t*)lv_event_get_target(e);
 
-	if (action >= '0' && action <= '9') {
-		self->appendPinChar(action);
-	} else if (action == 'D') { // DEL
+	uint32_t id = lv_buttonmatrix_get_selected_button(obj);
+	const char* txt = lv_buttonmatrix_get_button_text(obj, id);
+
+	if (!txt) return;
+
+	if (txt[0] >= '0' && txt[0] <= '9') {
+		self->appendPinChar(txt[0]);
+	} else if (strcmp(txt, LV_SYMBOL_BACKSPACE) == 0) {
 		self->deletePinChar();
-	} else if (action == 'O') { // OK
-		// Tratar como si presionaran VALIDATE PIN
-		//lv_event_send(self->m_btnValidate, LV_EVENT_CLICKED, nullptr);
 	}
 }
 
@@ -194,9 +238,14 @@ void PaymentModal::onValidatePressedCb(lv_event_t* e) {
 			self->m_onValidated(self->m_activePoint);
 		}
 	} else {
-		self->showError("INVALID PIN! TRY AGAIN.");
+		self->showError("PIN INCORRECTO. INTENTE DE NUEVO.");
 		self->clearPin();
 	}
+}
+
+void PaymentModal::onCancelPressedCb(lv_event_t* e) {
+	auto* self = static_cast<PaymentModal*>(lv_event_get_user_data(e));
+	self->hide();
 }
 
 void PaymentModal::appendPinChar(char c) {
@@ -204,7 +253,7 @@ void PaymentModal::appendPinChar(char c) {
 		m_pinBuffer[m_pinLen++] = c;
 		m_pinBuffer[m_pinLen] = '\0';
 		updatePinDisplay();
-		lv_label_set_text(m_lblError, ""); // Limpia error si empieza a escribir de nuevo
+		lv_label_set_text(m_lblError, "");
 	}
 }
 
