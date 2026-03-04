@@ -45,8 +45,8 @@ esp_err_t ControlBoardProxy::init(int txPin, int rxPin, uint32_t baudrate) {
 	err = uart_set_pin(m_uart, txPin, rxPin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 	if (err != ESP_OK) return err;
 
-	// Configurar modo Half Duplex para RS485/Modbus RTU
-	err = uart_set_mode(m_uart, UART_MODE_RS485_HALF_DUPLEX);
+	// Configurar modo UART básico
+	err = uart_set_mode(m_uart, UART_MODE_UART);
 	if (err != ESP_OK) return err;
 
 	// Registrar el diccionario de parámetros

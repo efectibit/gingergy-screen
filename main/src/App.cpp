@@ -33,8 +33,8 @@ App::App(uint8_t numPoints)
 // run() — Punto de entrada principal
 // =============================================================================
 void App::run() {
-	// 1. Inicializar Modbus (UART1: TX=17, RX=18, 9600 bps)
-	esp_err_t err = m_proxy.init(MODBUS_TX_PIN, MODBUS_RX_PIN, 9600);
+	// 1. Inicializar Modbus (UART1: TX=17, RX=18, 115200 bps)
+	esp_err_t err = m_proxy.init(MODBUS_TX_PIN, MODBUS_RX_PIN, 115200);
 	if (err == ESP_OK) {
 		m_proxy.start();
 		ESP_LOGI(TAG_APP, "Modbus Master iniciado correctamente");
