@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 #include "DisplayManager.hpp"
+#include "ControlBoardProxy.hpp"
 #include "ChargePoint.hpp"
 #include "screens/TerminalBar.hpp"
 #include "screens/TimeSelectionScreen.hpp"
 #include "screens/PaymentModal.hpp"
-#include "comms/ModbusClient.hpp"
 #include "../components/crypto_payment/include/CryptoPayment.h"
 
 /**
@@ -72,7 +72,7 @@ private:
 
 	// --- Subsistemas ---
 	DisplayManager      m_display;
-	ModbusClient        m_modbus;
+	ControlBoardProxy   m_proxy;
 	CryptoPayment       m_crypto;
 
 	// --- Modelo de dominio ---

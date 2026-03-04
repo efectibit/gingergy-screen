@@ -15,7 +15,7 @@ static constexpr int         MODBUS_RX_PIN = 18;
 // =============================================================================
 App::App(uint8_t numPoints)
 	: m_display()
-	, m_modbus(MODBUS_UART, MODBUS_ADDR, MODBUS_TX_PIN, MODBUS_RX_PIN)
+	, m_proxy(MODBUS_UART, MODBUS_ADDR)
 	, m_crypto()
 	, m_terminalBar(nullptr)
 	, m_selectionScreen(nullptr)
@@ -33,10 +33,19 @@ App::App(uint8_t numPoints)
 // run() — Punto de entrada principal
 // =============================================================================
 void App::run() {
-	// 1. Inicializar panel físico
+	// 1. Inicializar Modbus (UART1: TX=17, RX=18, 9600 bps)
+	esp_err_t err = m_proxy.init(MODBUS_TX_PIN, MODBUS_RX_PIN, 9600);
+	if (err == ESP_OK) {
+		m_proxy.start();
+		ESP_LOGI(TAG_APP, "Modbus Master iniciado correctamente");
+	} else {
+		ESP_LOGE(TAG_APP, "Fallo al inicializar Modbus: %s", esp_err_to_name(err));
+	}
+
+	// 2. Inicializar panel físico
 	m_display.init();
 
-	// 2. Arrancar LVGL en Core 1; se llama buildUI() cuando LVGL esté listo
+	// 3. Arrancar LVGL en Core 1; se llama buildUI() cuando LVGL esté listo
 	m_display.startGuiTask([this](lv_display_t* disp) {
 		this->buildUI(disp);
 	});
@@ -102,8 +111,14 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 
 void App::onPaymentValidated(ChargePoint* cp) {
 	if (!cp) return;
-	ESP_LOGI(TAG_APP, "Pago validado: enviando comando Modbus para terminal %d",
-			 cp->getId());
+	ESP_LOGI(TAG_APP, "Pago validado: enviando comando Modbus para terminal %d por %d minutos",
+			 cp->getId(), cp->getSelectedMinutes());
+
+	// Enviar comando vía Modbus
+	esp_err_t err = m_proxy.sendStartCharge(cp->getId(), cp->getSelectedMinutes());
+	if (err != ESP_OK) {
+		ESP_LOGE(TAG_APP, "Modbus falló al enviar comando al terminal %d", cp->getId());
+	}
 
 	m_paymentModal->hide();
 	cp->resetTime();
