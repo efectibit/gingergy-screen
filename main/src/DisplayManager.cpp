@@ -161,11 +161,11 @@ void DisplayManager::startGuiTask(std::function<void(lv_display_t*)> uiReadyCb) 
 // lock() / unlock() — Protección del acceso a LVGL
 // =============================================================================
 void DisplayManager::lock() {
-	xSemaphoreTake(m_guiSemaphore, portMAX_DELAY);
+	xSemaphoreTakeRecursive(m_guiSemaphore, portMAX_DELAY);
 }
 
 void DisplayManager::unlock() {
-	xSemaphoreGive(m_guiSemaphore);
+	xSemaphoreGiveRecursive(m_guiSemaphore);
 }
 
 lv_display_t* DisplayManager::getDisplay() {
@@ -221,7 +221,7 @@ void DisplayManager::guiTaskFn(void* param) {
 	auto* self = static_cast<DisplayManager*>(param);
 
 	// --- Mutex ---
-	self->m_guiSemaphore = xSemaphoreCreateMutex();
+	self->m_guiSemaphore = xSemaphoreCreateRecursiveMutex();
 
 	// --- Inicializar LVGL ---
 	lv_init();
@@ -270,17 +270,17 @@ void DisplayManager::guiTaskFn(void* param) {
 
 	// --- Construir UI (sección protegida) ---
 	if (self->m_uiReadyCb) {
-		xSemaphoreTake(self->m_guiSemaphore, portMAX_DELAY);
+		xSemaphoreTakeRecursive(self->m_guiSemaphore, portMAX_DELAY);
 		self->m_uiReadyCb(self->m_lvglDisplay);
-		xSemaphoreGive(self->m_guiSemaphore);
+		xSemaphoreGiveRecursive(self->m_guiSemaphore);
 	}
 
 	// --- Loop principal de LVGL ---
 	while (true) {
 		vTaskDelay(pdMS_TO_TICKS(10));
-		xSemaphoreTake(self->m_guiSemaphore, portMAX_DELAY);
+		xSemaphoreTakeRecursive(self->m_guiSemaphore, portMAX_DELAY);
 		lv_timer_handler();
-		xSemaphoreGive(self->m_guiSemaphore);
+		xSemaphoreGiveRecursive(self->m_guiSemaphore);
 	}
 }
 

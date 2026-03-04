@@ -96,8 +96,10 @@ void App::onTerminalSelected(uint8_t id) {
 
 	ESP_LOGI(TAG_APP, "Terminal %d seleccionado", id);
 
+	m_display.lock();
 	m_terminalBar->setActive(id);
 	m_selectionScreen->setActivePoint(cp);
+	m_display.unlock();
 }
 
 void App::onTimeConfirmed(ChargePoint* cp) {
@@ -105,8 +107,10 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 	ESP_LOGI(TAG_APP, "Tiempo confirmado: terminal %d, %d min",
 			 cp->getId(), cp->getSelectedMinutes());
 
+	m_display.lock();
 	lv_obj_t* scr = lv_display_get_screen_active(m_display.getDisplay());
 	m_paymentModal->show(scr, cp);
+	m_display.unlock();
 }
 
 void App::onPaymentValidated(ChargePoint* cp) {
@@ -120,10 +124,12 @@ void App::onPaymentValidated(ChargePoint* cp) {
 		ESP_LOGE(TAG_APP, "Modbus falló al enviar comando al terminal %d", cp->getId());
 	}
 
+	m_display.lock();
 	m_paymentModal->hide();
 	cp->resetTime();
 	m_terminalBar->refreshIcon(cp->getId());
 	m_selectionScreen->updateDisplay();
+	m_display.unlock();
 }
 
 void App::syncChargePointStatus() {
