@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-PaymentModal::PaymentModal(std::function<void(ChargePoint*)> onValidated)
+PaymentModal::PaymentModal(std::function<void(ChargePoint*)> onValidate)
 	: m_modal(nullptr)
 	, m_lblTitle(nullptr)
 	, m_lblMinutes(nullptr)
@@ -17,7 +17,7 @@ PaymentModal::PaymentModal(std::function<void(ChargePoint*)> onValidated)
 	, m_confirmMboxOverlay(nullptr)
 	, m_pinLen(0)
 	, m_activePoint(nullptr)
-	, m_onValidated(onValidated)
+	, m_onValidate(onValidate)
 {
 	m_pinBuffer[0] = '\0';
 }
