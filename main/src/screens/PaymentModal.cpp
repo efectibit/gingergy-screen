@@ -174,6 +174,12 @@ void PaymentModal::hide() {
 	clearPin();
 }
 
+void PaymentModal::updateQr(uint8_t* payload, size_t len) {
+	if (m_qrCanvas) {
+		lv_qrcode_update(m_qrCanvas, payload, len);
+	}
+}
+
 static const char * btnm_map[] = {
 	"7", "8", "9", "\n",
 	"4", "5", "6", "\n",

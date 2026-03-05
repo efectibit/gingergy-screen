@@ -44,6 +44,11 @@ public:
 	 */
 	void hide();
 
+	/**
+	 * @brief Actualiza el QR binario.
+	 */
+	void updateQr(uint8_t* payload, size_t len);
+
 private:
 	// --- Construcción de sub-secciones ---
 	void buildQR(uint8_t* payload, size_t len);
