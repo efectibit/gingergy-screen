@@ -59,9 +59,16 @@ void PaymentModal::show(lv_obj_t* scr, ChargePoint* cp) {
 	lv_obj_set_style_text_font(m_lblMinutes, &lv_font_montserrat_22, 0);
 	lv_obj_align(m_lblMinutes, LV_ALIGN_TOP_LEFT, 50, 60);
 
-	float price = (cp->getSelectedMinutes() / 15.0f) * 0.50f;
+	// Precio viene del esclavo (3 decimales implícitos), o estimación local si aún no hay firma
+	uint32_t priceRaw = cp->getPrice();
 	m_lblPrice = lv_label_create(box);
-	lv_label_set_text_fmt(m_lblPrice, "S/ %.2f", price);
+	if (priceRaw > 0) {
+		// Formatear precio con 3 decimales: 12345 → "12.345"
+		lv_label_set_text_fmt(m_lblPrice, "S/ %lu.%03lu", (unsigned long)(priceRaw / 1000), (unsigned long)(priceRaw % 1000));
+	} else {
+		// Aún no se ha solicitado la firma al esclavo
+		lv_label_set_text(m_lblPrice, "S/ ---");
+	}
 	lv_obj_set_style_text_font(m_lblPrice, &lv_font_montserrat_32, 0);
 	lv_obj_align_to(m_lblPrice, m_lblMinutes, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
