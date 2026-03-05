@@ -110,6 +110,27 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 	lv_obj_t* scr = lv_display_get_screen_active(m_display.getDisplay());
 	m_paymentModal->show(scr, cp);
 	m_display.unlock();
+
+	esp_err_t sigErr = m_proxy.requestSignature(cp);
+	if (sigErr != ESP_OK) {
+		ESP_LOGW(TAG_APP, "No se pudo obtener firma del esclavo (T%d). El QR usará fallback.",
+				 cp->getId());
+	}
+
+	// Update QR and price
+	this->m_display.lock();
+	
+	const uint8_t* sig = cp->getSignature();
+	bool hasSig = false;
+	for (int i = 0; i < 64 && !hasSig; i++) {
+		hasSig = (sig[i] != 0);
+	}
+
+	if (hasSig) {
+		this->m_paymentModal->updateQr(sig, 64);
+	}
+
+	this->m_display.unlock();
 }
 
 void App::onPaymentValidate(ChargePoint* cp) {
