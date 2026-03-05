@@ -181,7 +181,7 @@ void PaymentModal::hide() {
 	clearPin();
 }
 
-void PaymentModal::updateQr(uint8_t* payload, size_t len) {
+void PaymentModal::updateQr(const uint8_t* payload, size_t len) {
 	if (m_qrCanvas) {
 		lv_qrcode_update(m_qrCanvas, payload, len);
 	}
