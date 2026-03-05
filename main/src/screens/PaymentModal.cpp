@@ -187,6 +187,12 @@ void PaymentModal::updateQr(const uint8_t* payload, size_t len) {
 	}
 }
 
+void PaymentModal::updatePrice(uint32_t priceRaw) {
+	if (this->m_lblPrice) {
+		lv_label_set_text_fmt(this->m_lblPrice, "S/ %lu.%03lu", (unsigned long)(priceRaw / 1000), (unsigned long)(priceRaw % 1000));
+	}
+}
+
 static const char * btnm_map[] = {
 	"7", "8", "9", "\n",
 	"4", "5", "6", "\n",

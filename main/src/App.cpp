@@ -128,6 +128,7 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 
 	if (hasSig) {
 		this->m_paymentModal->updateQr(sig, 64);
+		this->m_paymentModal->updatePrice(cp->getPrice());
 	}
 
 	this->m_display.unlock();

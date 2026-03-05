@@ -49,6 +49,11 @@ public:
 	 */
 	void updateQr(const uint8_t* payload, size_t len);
 
+	/**
+	 * @brief Actualiza el precio.
+	 */
+	void updatePrice(uint32_t priceRaw);
+
 private:
 	// --- Construcción de sub-secciones ---
 	void buildQR(uint8_t* payload, size_t len);
