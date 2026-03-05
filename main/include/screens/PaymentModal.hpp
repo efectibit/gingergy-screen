@@ -27,10 +27,9 @@
 class PaymentModal {
 public:
 	/**
-	 * @param onValidated  Callback invocado si el PIN es correcto.
-	 *                     Recibe el puntero al ChargePoint activo.
+	 * @param onValidate  Callback invocado tras enviar el PIN exitosamente.
 	 */
-	PaymentModal(std::function<void(ChargePoint*)> onValidated);
+	PaymentModal(std::function<void(ChargePoint*)> onValidate);
 
 	/**
 	 * @brief Muestra el modal sobre la pantalla dada.
@@ -85,5 +84,5 @@ private:
 	uint8_t m_pinLen;
 
 	ChargePoint*                      m_activePoint;
-	std::function<void(ChargePoint*)> m_onValidated;
+	std::function<void(ChargePoint*)> m_onValidate;
 };
