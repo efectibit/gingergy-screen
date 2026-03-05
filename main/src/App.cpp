@@ -139,7 +139,7 @@ void App::onPaymentValidate(ChargePoint* cp) {
 			 cp->getId(), cp->getSelectedMinutes());
 
 	// Enviar comando vía Modbus
-	esp_err_t err = m_proxy.sendStartCharge(cp->getId(), cp->getSelectedMinutes());
+	esp_err_t err = m_proxy.sendUserPin(cp, 123456);
 	if (err != ESP_OK) {
 		ESP_LOGE(TAG_APP, "Modbus falló al enviar comando al terminal %d", cp->getId());
 	}

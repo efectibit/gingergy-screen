@@ -245,16 +245,7 @@ void PaymentModal::onValidatePressedCb(lv_event_t* e) {
 	uint32_t pin = 0;
 	sscanf(self->m_pinBuffer, "%lu", &pin);
 
-	bool valid = true; // self->m_crypto->validatePIN(pin, self->m_activePoint->getId(), self->m_activePoint->getSelectedMinutes());
-
-	if (valid) {
-		if (self->m_onValidated) {
-			self->m_onValidated(self->m_activePoint);
-		}
-	} else {
-		self->showError("PIN INCORRECTO. INTENTE DE NUEVO.");
-		self->clearPin();
-	}
+	self->m_onValidate(self->m_activePoint);
 }
 
 void PaymentModal::onCancelPressedCb(lv_event_t* e) {
