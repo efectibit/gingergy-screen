@@ -55,7 +55,7 @@ private:
 	 * @brief Llamado cuando el PIN es válido.
 	 *        Envía el comando de carga por Modbus y cierra el modal.
 	 */
-	void onPaymentValidated(ChargePoint* cp);
+	void onPaymentValidate(ChargePoint* cp);
 
 	/**
 	 * @brief Sincroniza el estado de los ChargePoints con la placa
