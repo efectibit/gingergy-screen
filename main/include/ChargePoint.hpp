@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <string.h>  // memset, memcpy
 
 /**
  * @brief Estado de un punto de carga.
@@ -52,12 +53,40 @@ public:
 	 */
 	void resetTime();
 
+	// --- Datos de sesión (rellenados por ControlBoardProxy) ---
+
+	/** Firma de 64 bytes generada por el esclavo para el QR. */
+	const uint8_t* getSignature() const { return m_signature; }
+	void setSignature(const uint8_t* sig) { memcpy(m_signature, sig, 64); }
+
+	/**
+	 * Precio de la sesión con 3 decimales implícitos.
+	 * Ej: 12345 representa 12.345
+	 */
+	uint32_t getPrice() const { return m_price; }
+	void     setPrice(uint32_t p) { m_price = p; }
+
+	/** Watts consumidos en la sesión actual. */
+	uint16_t getEnergy() const { return m_energy; }
+	void     setEnergy(uint16_t w) { m_energy = w; }
+
+	/** Minutos transcurridos suministrando energía. */
+	uint16_t getElapsedTime() const { return m_elapsedTime; }
+	void     setElapsedTime(uint16_t t) { m_elapsedTime = t; }
+
 private:
 	static constexpr uint16_t TIME_STEP_MIN = 15;
 	static constexpr uint16_t TIME_MIN_MIN  = 15;
 	static constexpr uint16_t TIME_MAX_MIN  = 120;
 
+	// Identidad y estado local
 	uint8_t           m_id;
 	ChargePointStatus m_status;
 	uint16_t          m_selectedMinutes;
+
+	// Datos de sesión provenientes del esclavo Modbus
+	uint8_t  m_signature[64];
+	uint32_t m_price;
+	uint16_t m_energy;
+	uint16_t m_elapsedTime;
 };
