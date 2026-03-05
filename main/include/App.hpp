@@ -6,7 +6,6 @@
 #include "screens/TerminalBar.hpp"
 #include "screens/TimeSelectionScreen.hpp"
 #include "screens/PaymentModal.hpp"
-#include "../components/crypto_payment/include/CryptoPayment.h"
 
 /**
  * @brief Orquestador principal de la aplicación.
@@ -73,7 +72,6 @@ private:
 	// --- Subsistemas ---
 	DisplayManager      m_display;
 	ControlBoardProxy   m_proxy;
-	CryptoPayment       m_crypto;
 
 	// --- Modelo de dominio ---
 	std::vector<ChargePoint> m_chargePoints;

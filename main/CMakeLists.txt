@@ -7,7 +7,6 @@ idf_component_register(
         ${SRC_FILES}
     INCLUDE_DIRS
         "include"
-        "../components/crypto_payment/include"
     REQUIRES
         esp_lcd
         driver

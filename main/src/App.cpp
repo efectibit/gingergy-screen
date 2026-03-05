@@ -16,7 +16,6 @@ static constexpr int         MODBUS_RX_PIN = 18;
 App::App(uint8_t numPoints)
 	: m_display()
 	, m_proxy(MODBUS_UART, MODBUS_ADDR)
-	, m_crypto()
 	, m_terminalBar(nullptr)
 	, m_selectionScreen(nullptr)
 	, m_paymentModal(nullptr)
@@ -74,7 +73,7 @@ void App::buildUI(lv_display_t* disp) {
 	m_selectionScreen->build(scr);
 
 	// 3. Modal de pago (oculto inicialmente)
-	m_paymentModal = new PaymentModal(&m_crypto, [this](ChargePoint* cp) {
+	m_paymentModal = new PaymentModal([this](ChargePoint* cp) {
 		this->onPaymentValidated(cp);
 	});
 

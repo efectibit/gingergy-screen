@@ -3,19 +3,15 @@
 #include "lvgl.h"
 #include "../ChargePoint.hpp"
 
-// Forward declaration para evitar inclusión circular
-class CryptoPayment;
-
 /**
  * @brief Modal de pago: QR binario + teclado numérico + validación de PIN (UC1.1).
  *
  * Flujo interno:
- *  1. show() → llama a CryptoPayment::generatePayload() y renderiza el QR
+ *  1. show() → renderiza todo el modal y de manera asincrona tienes que pasarle el QR
  *  2. El usuario escanea el QR con su móvil y recibe un PIN
  *  3. El usuario ingresa el PIN con el teclado numérico en pantalla
- *  4. [VALIDATE PIN] → llama a CryptoPayment::validatePIN()
- *     - Válido  → lanza onValidated(cp)
- *     - Inválido → muestra mensaje de error y permite reintentar
+ *  4. [VALIDATE PIN] → debe mandar al esclavo el PIN
+ *  5. El esclavo responde si el PIN es válido
  *
  * Layout:
  *  ┌──────────────────────────────────────┐
@@ -31,12 +27,10 @@ class CryptoPayment;
 class PaymentModal {
 public:
 	/**
-	 * @param crypto       Puntero a la instancia de CryptoPayment.
 	 * @param onValidated  Callback invocado si el PIN es correcto.
 	 *                     Recibe el puntero al ChargePoint activo.
 	 */
-	PaymentModal(CryptoPayment* crypto,
-				 std::function<void(ChargePoint*)> onValidated);
+	PaymentModal(std::function<void(ChargePoint*)> onValidated);
 
 	/**
 	 * @brief Muestra el modal sobre la pantalla dada.
@@ -91,6 +85,5 @@ private:
 	uint8_t m_pinLen;
 
 	ChargePoint*                      m_activePoint;
-	CryptoPayment*                    m_crypto;
 	std::function<void(ChargePoint*)> m_onValidated;
 };

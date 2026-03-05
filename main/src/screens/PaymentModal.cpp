@@ -1,10 +1,8 @@
 #include "screens/PaymentModal.hpp"
-#include "../components/crypto_payment/include/CryptoPayment.h"
 #include <stdio.h>
 #include <string.h>
 
-PaymentModal::PaymentModal(CryptoPayment* crypto,
-						   std::function<void(ChargePoint*)> onValidated)
+PaymentModal::PaymentModal(std::function<void(ChargePoint*)> onValidated)
 	: m_modal(nullptr)
 	, m_lblTitle(nullptr)
 	, m_lblMinutes(nullptr)
@@ -19,14 +17,13 @@ PaymentModal::PaymentModal(CryptoPayment* crypto,
 	, m_confirmMboxOverlay(nullptr)
 	, m_pinLen(0)
 	, m_activePoint(nullptr)
-	, m_crypto(crypto)
 	, m_onValidated(onValidated)
 {
 	m_pinBuffer[0] = '\0';
 }
 
 void PaymentModal::show(lv_obj_t* scr, ChargePoint* cp) {
-	if (!cp || !m_crypto) return;
+	if (!cp) return;
 	m_activePoint = cp;
 
 	// Fondo oscurecido
@@ -235,7 +232,7 @@ void PaymentModal::onValidatePressedCb(lv_event_t* e) {
 	uint32_t pin = 0;
 	sscanf(self->m_pinBuffer, "%lu", &pin);
 
-	bool valid = self->m_crypto->validatePIN(pin, self->m_activePoint->getId(), self->m_activePoint->getSelectedMinutes());
+	bool valid = true; // self->m_crypto->validatePIN(pin, self->m_activePoint->getId(), self->m_activePoint->getSelectedMinutes());
 
 	if (valid) {
 		if (self->m_onValidated) {
