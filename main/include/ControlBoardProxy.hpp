@@ -32,8 +32,8 @@ typedef struct {
 
 typedef struct {
 	uint16_t terminal_id;    // 0x0000 (1 reg)
-	uint8_t  signature[64];
 	uint32_t price;
+	uint8_t  signature[64];
 } input_terminal_price_response_t;
 
 #pragma pack(pop)
