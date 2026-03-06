@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
 	uint16_t terminal_id;    // 0x0000 (1 reg)
-	uint16_t work_mode; // ChargeWorkMode
+	uint16_t work_status; // ChargeWorkMode
 } input_terminal_status_response_t;
 
 typedef struct {
@@ -77,15 +77,20 @@ public:
 	esp_err_t inline stop()  { return mbc_master_stop(m_masterHandle); }
 
 	/**
+	 * Lee el work mode del terminal.
+	 */
+	ChargeWorkMode readWorkMode(ChargePoint* cp);
+
+	/**
+	 * Lee el precio y la firma del terminal.
+	 */
+	esp_err_t readPrice(ChargePoint* cp);
+
+	/**
 	 * Solicita al esclavo la firma para el QR.
 	 * Escribe {terminalId, minutes} en Holding → espera → lee Input completo.
 	 */
-	esp_err_t requestSignature(ChargePoint* cp);
-
-	/**
-	 * Lee el estado/energía/tiempo del terminal y actualiza el ChargePoint.
-	 */
-	esp_err_t syncStatus(ChargePoint* cp);
+	esp_err_t requestPrice(ChargePoint* cp);
 
 	// Los siguientes métodos quedan pendientes de re-implementación con las nuevas estructuras
 	// o se eliminarán si la lógica cambia a favor del polleo de estado.

@@ -110,7 +110,42 @@ esp_err_t ControlBoardProxy::init(int txPin, int rxPin, uint32_t baudrate) {
 // OPERACIONES
 // ============================================================================
 
-esp_err_t ControlBoardProxy::requestSignature(ChargePoint* cp) {
+ChargeWorkMode ControlBoardProxy::readWorkMode(ChargePoint* cp) {
+	if (!cp) return ChargeWorkMode::UNKNOWN;
+	uint8_t type = 0;
+	m_statusResp.terminal_id = cp->getId();
+	esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_TERMINAL_STATUS,
+                                              (uint8_t*)&m_statusResp, &type);
+	if (err != ESP_OK) {
+        ESP_LOGE(TAG, "readWorkMode: error leyendo respuesta (T%d): %s",
+				 cp->getId(), esp_err_to_name(err));
+        return ChargeWorkMode::UNKNOWN;
+    }
+    
+    ESP_LOGI(TAG, "T%d work mode (%u) recibido", cp->getId(), m_statusResp.work_status);
+    return static_cast<ChargeWorkMode>(m_statusResp.work_status);
+}
+
+esp_err_t ControlBoardProxy::readPrice(ChargePoint* cp) {
+	if (!cp) return ESP_ERR_INVALID_ARG;
+	uint8_t type = 0;
+	m_priceResp.terminal_id = cp->getId();
+	esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_PRICE,
+                                              (uint8_t*)&m_priceResp, &type);
+	if (err != ESP_OK) {
+        ESP_LOGE(TAG, "readPrice: error leyendo respuesta (T%d): %s",
+				 cp->getId(), esp_err_to_name(err));
+        return err;
+    }
+
+    cp->setSignature(m_priceResp.signature);
+    cp->setPrice(m_priceResp.price);
+    
+    ESP_LOGI(TAG, "T%d firma y precio (%lu) recibidos", cp->getId(), (unsigned long)m_priceResp.price);
+    return ESP_OK;
+}
+
+esp_err_t ControlBoardProxy::requestPrice(ChargePoint* cp) {
     if (!cp) return ESP_ERR_INVALID_ARG;
     uint8_t type = 0;
 
@@ -121,49 +156,12 @@ esp_err_t ControlBoardProxy::requestSignature(ChargePoint* cp) {
     esp_err_t err = mbc_master_set_parameter(m_masterHandle, CID_HOLD_PRICE,
                                                (uint8_t*)&m_holdPriceReq, &type);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "requestSignature: error enviando solicitud (T%d): %s",
+        ESP_LOGE(TAG, "requestPrice: error enviando solicitud (T%d): %s",
                  cp->getId(), esp_err_to_name(err));
         return err;
     }
 
-    // 2. Espera corta para que el esclavo procese
-    vTaskDelay(pdMS_TO_TICKS(100));
-
-    // 3. Leer respuesta de precio/firma
-    m_priceResp.terminal_id = cp->getId();
-    err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_PRICE,
-                                   (uint8_t*)&m_priceResp, &type);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "requestSignature: error leyendo respuesta (T%d): %s",
-                 cp->getId(), esp_err_to_name(err));
-        return err;
-    }
-
-    // 4. Poblar ChargePoint
-    cp->setSignature(m_priceResp.signature);
-    cp->setPrice(m_priceResp.price);
-    
-    ESP_LOGI(TAG, "T%d firma y precio (%lu) recibidos", cp->getId(), (unsigned long)m_priceResp.price);
-    return ESP_OK;
-}
-
-esp_err_t ControlBoardProxy::syncStatus(ChargePoint* cp) {
-    if (!cp) return ESP_ERR_INVALID_ARG;
-    uint8_t type = 0;
-
-    m_statusResp.terminal_id = cp->getId();
-    esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_TERMINAL_STATUS,
-                                              (uint8_t*)&m_statusResp, &type);
-    if (err != ESP_OK) {
-        ESP_LOGW(TAG, "syncStatus: error (T%d): %s", cp->getId(), esp_err_to_name(err));
-        return err;
-    }
-
-    // Mapear work_mode (esto es un ejemplo, se debe ajustar según lógica de negocio)
-    // cp->setWorkMode(static_cast<ChargeWorkMode>(m_statusResp.work_mode));
-    
-    ESP_LOGD(TAG, "T%d status sync: work_mode=%u", cp->getId(), m_statusResp.work_mode);
-    return ESP_OK;
+	return ESP_OK;
 }
 
 esp_err_t ControlBoardProxy::sendUserPin(ChargePoint* cp, uint32_t pin) {
