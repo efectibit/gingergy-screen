@@ -16,27 +16,25 @@
 
 #pragma pack(push, 1)
 
-/** Input Registers: datos que el maestro lee del esclavo.
- *  El terminal_id siempre encabeza el struct para que el esclavo sepa
- *  a qué punto de carga responder. */
-typedef struct {
-	uint16_t terminal_id;    // 0x0000 (1 reg)
-	uint8_t  signature[64];  // 0x0001–0x0020 (32 reg) — Firma de 64 bytes del esclavo
-	uint32_t price;          // 0x0021–0x0022 (2 reg)  — Precio con 3 dec. implícitos
-	uint16_t status;         // 0x0023 (1 reg) — 0=Disp, 1=Ocup, 2=Falla, 3=FueraSrv
-	uint16_t elapsed_time;   // 0x0024 (1 reg) — Minutos transcurridos en la sesión
-	uint16_t energy;         // 0x0025 (1 reg) — Watts consumidos en la sesión
-} input_reg_params_t;        // Total: 1+32+2+1+1+1 = 38 registros
+// "Terminal" refers to a charge point
+// "Device" refers to the control board
 
-/** Holding Registers: commandos/parámetros que el maestro escribe al esclavo.
- *  terminal_id siempre va primero. */
+// El envío del tiempo para que el esclavo genere firma y precio
 typedef struct {
 	uint16_t terminal_id;    // 0x0000 (1 reg) — SIEMPRE presente
 	uint16_t req_minutes;    // 0x0001 (1 reg) — Solicita firma para N minutos
-	uint32_t user_pin;       // 0x0002–0x0003 (2 reg) — PIN hasta 8 dígitos
-	uint16_t enable_point;   // 0x0004 (1 reg) — 1=Habilitar, 0=Deshabilitar (admin)
-	uint32_t unit_price;     // 0x0005–0x0006 (2 reg) — Precio/min establecido por admin
-} holding_reg_params_t;      // Total: 1+1+2+1+2 = 7 registros
+} holding_terminal_price_request_t;
+
+typedef struct {
+	uint16_t terminal_id;    // 0x0000 (1 reg)
+	uint16_t work_mode; // ChargeWorkMode
+} input_terminal_status_response_t;
+
+typedef struct {
+	uint16_t terminal_id;    // 0x0000 (1 reg)
+	uint8_t  signature[64];
+	uint32_t price;
+} input_terminal_price_response_t;
 
 #pragma pack(pop)
 
@@ -61,11 +59,9 @@ typedef struct {
 // ============================================================================
 
 enum {
-	CID_INPUT_QUERY  = 0,  // Input:   {terminal_id, signature[64], price, status, elapsed, energy}
-	CID_HOLD_REQUEST = 1,  // Holding: {terminal_id, req_minutes, ...} — Solicitar firma
-	CID_HOLD_PIN     = 2,  // Holding: {terminal_id, user_pin}         — Enviar PIN
-	CID_HOLD_ENABLE  = 3,  // Holding: {terminal_id, enable_point}     — Admin: habilitar
-	CID_HOLD_PRICE   = 4,  // Holding: {terminal_id, unit_price}       — Admin: precio
+	CID_HOLD_PRICE  = 0,  // Holding: {terminal_id, req_minutes} — Solicitar precio y esclavo internamente genera la firma
+	CID_INPUT_TERMINAL_STATUS = 1,  // Input: {terminal_id, work_mode} — Solicitar estado del terminal
+	CID_INPUT_PRICE     = 2,  // Input: {terminal_id, signature[64], price} — Solicitar precio y firma
 	CID_COUNT
 };
 

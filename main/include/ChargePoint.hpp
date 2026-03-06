@@ -12,6 +12,13 @@ enum class ChargePointStatus : uint8_t {
 	OUT_OF_SERVICE  ///< Fuera de servicio / deshabilitado
 };
 
+enum class ChargeWorkMode : uint16_t {
+	IDLE,
+	PROCESSING,
+	DONE,
+	ERROR
+};
+
 /**
  * @brief Modelo de dominio de un punto de carga.
  *
