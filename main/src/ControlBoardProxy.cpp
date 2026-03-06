@@ -188,7 +188,7 @@ esp_err_t ControlBoardProxy::sendUserPin(ChargePoint* cp, uint32_t pin) {
     m_holdingData.terminal_id = cp->getId();
     m_holdingData.user_pin    = pin;
     esp_err_t err = mbc_master_set_parameter(m_masterHandle, CID_HOLD_PIN,
-                                              (uint8_t*)&m_holdingData, &type);
+                                              (uint8_t*)&m_holdingData.user_pin, &type);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "sendUserPin: error (T%d): %s", cp->getId(), esp_err_to_name(err));
     } else {
