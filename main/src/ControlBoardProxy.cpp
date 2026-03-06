@@ -47,7 +47,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         CID_INPUT_PRICE,
         (char*)"InputPrice", (char*)"--",
         1, MB_PARAM_INPUT,
-        0x0002, 35,                     // Reg Start = 0x0002, Size = 35 (1 + 32 + 2)
+        0x0100, 35,                     // Reg Start = 0x0000, Size = 35 (1 + 2 + 32)
         MB_OFFSET(input_terminal_price_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_terminal_price_response_t),
