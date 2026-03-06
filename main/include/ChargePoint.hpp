@@ -13,6 +13,7 @@ enum class ChargePointStatus : uint8_t {
 };
 
 enum class ChargeWorkMode : uint16_t {
+	UNKNOWN = 0,
 	IDLE,
 	PROCESSING,
 	DONE,
