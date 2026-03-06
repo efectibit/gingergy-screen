@@ -39,29 +39,24 @@ typedef struct {
 #pragma pack(pop)
 
 // ============================================================================
-// MACROS — Idéntico patrón al ejemplo serial_master.c
+// MACROS — Para cálculo dinámico de registros
 // ============================================================================
 
 // offsetof retorna bytes; cada registro Modbus es 2 bytes → shift derecho 1
-#define HOLD_OFFSET(field)  ((uint16_t)(offsetof(holding_reg_params_t, field) + 1))
-#define INPUT_OFFSET(field) ((uint16_t)(offsetof(input_reg_params_t,   field) + 1))
-
-// Dirección inicial del registro = offset en bytes / 2
-#define HOLD_REG_START(field)  (HOLD_OFFSET(field)  >> 1)
-#define INPUT_REG_START(field) (INPUT_OFFSET(field) >> 1)
+// El "+ 1" es por el patrón del ejemplo de Espressif para evitar offset 0 en algunos casos
+#define MB_OFFSET(struct_type, field) ((uint16_t)(offsetof(struct_type, field) + 1))
 
 // Cantidad de registros que ocupa el campo = sizeof(campo) / 2
-#define HOLD_REG_SIZE(field)  (sizeof(((holding_reg_params_t*)0)->field) >> 1)
-#define INPUT_REG_SIZE(field) (sizeof(((input_reg_params_t*)0)->field)   >> 1)
+#define MB_REG_SIZE(struct_type, field)  (sizeof(((struct_type*)0)->field) >> 1)
 
 // ============================================================================
 // CIDs
 // ============================================================================
 
 enum {
-	CID_HOLD_PRICE  = 0,  // Holding: {terminal_id, req_minutes} — Solicitar precio y esclavo internamente genera la firma
-	CID_INPUT_TERMINAL_STATUS = 1,  // Input: {terminal_id, work_mode} — Solicitar estado del terminal
-	CID_INPUT_PRICE     = 2,  // Input: {terminal_id, signature[64], price} — Solicitar precio y firma
+	CID_HOLD_PRICE = 0,             // Holding: {terminal_id, req_minutes}
+	CID_INPUT_TERMINAL_STATUS = 1,  // Input:   {terminal_id, work_mode}
+	CID_INPUT_PRICE = 2,            // Input:   {terminal_id, signature[64], price}
 	CID_COUNT
 };
 
@@ -84,25 +79,18 @@ public:
 	/**
 	 * Solicita al esclavo la firma para el QR.
 	 * Escribe {terminalId, minutes} en Holding → espera → lee Input completo.
-	 * Rellena cp->setSignature() y cp->setPrice() con los datos del esclavo.
 	 */
 	esp_err_t requestSignature(ChargePoint* cp);
-
-	/**
-	 * Envía el PIN del usuario al esclavo para que lo valide.
-	 * Si el PIN es correcto, el esclavo activa el relé internamente.
-	 */
-	esp_err_t sendUserPin(ChargePoint* cp, uint32_t pin);
 
 	/**
 	 * Lee el estado/energía/tiempo del terminal y actualiza el ChargePoint.
 	 */
 	esp_err_t syncStatus(ChargePoint* cp);
 
-	/** Admin: habilita o deshabilita un punto de carga. */
+	// Los siguientes métodos quedan pendientes de re-implementación con las nuevas estructuras
+	// o se eliminarán si la lógica cambia a favor del polleo de estado.
+	esp_err_t sendUserPin(ChargePoint* cp, uint32_t pin);
 	esp_err_t setPointEnabled(ChargePoint* cp, bool enabled);
-
-	/** Admin: establece el precio por minuto global. */
 	esp_err_t setUnitPrice(ChargePoint* cp, uint32_t price);
 
 private:
@@ -113,9 +101,10 @@ private:
 	static const mb_parameter_descriptor_t m_deviceParameters[];
 	static const size_t m_numParameters;
 
-	// Buffers físicos que el driver usa para leer/escribir en DMA
-	input_reg_params_t   m_inputData;
-	holding_reg_params_t m_holdingData;
+	// Buffers físicos granulares
+	holding_terminal_price_request_t m_holdPriceReq;
+	input_terminal_status_response_t m_statusResp;
+	input_terminal_price_response_t  m_priceResp;
 };
 
 #endif // CONTROL_BOARD_PROXY_HPP
