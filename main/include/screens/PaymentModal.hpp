@@ -29,7 +29,10 @@ public:
 	/**
 	 * @param onValidate  Callback invocado tras enviar el PIN exitosamente.
 	 */
-	PaymentModal(std::function<void(ChargePoint*)> onValidate);
+	/**
+	 * @param onValidate  Callback invocado tras enviar el PIN exitosamente.
+	 */
+	PaymentModal(std::function<void(ChargePoint*, uint32_t)> onValidate);
 
 	/**
 	 * @brief Muestra el modal sobre la pantalla dada.
@@ -94,5 +97,5 @@ private:
 	uint8_t m_pinLen;
 
 	ChargePoint*                      m_activePoint;
-	std::function<void(ChargePoint*)> m_onValidate;
+	std::function<void(ChargePoint*, uint32_t)> m_onValidate;
 };

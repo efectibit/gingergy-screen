@@ -73,8 +73,8 @@ void App::buildUI(lv_display_t* disp) {
 	m_selectionScreen->build(scr);
 
 	// 3. Modal de pago (oculto inicialmente)
-	m_paymentModal = new PaymentModal([this](ChargePoint* cp) {
-		this->onPaymentValidate(cp);
+	m_paymentModal = new PaymentModal([this](ChargePoint* cp, uint32_t pin) {
+		this->onPaymentValidate(cp, pin);
 	});
 
 	ESP_LOGI(TAG_APP, "UI construida (TerminalBar + TimeSelectionScreen + PaymentModal)");
@@ -134,13 +134,13 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 	this->m_display.unlock();
 }
 
-void App::onPaymentValidate(ChargePoint* cp) {
+void App::onPaymentValidate(ChargePoint* cp, uint32_t pin) {
 	if (!cp) return;
 	ESP_LOGI(TAG_APP, "Pago validado: enviando comando Modbus para terminal %d por %d minutos",
 			 cp->getId(), cp->getSelectedMinutes());
 
-	// Enviar comando vía Modbus
-	esp_err_t err = m_proxy.sendUserPin(cp, 123456);
+	// Enviar comando vía Modbus usando el PIN ingresado por el usuario
+	esp_err_t err = m_proxy.sendUserPin(cp, pin);
 	if (err != ESP_OK) {
 		ESP_LOGE(TAG_APP, "Modbus falló al enviar comando al terminal %d", cp->getId());
 	}

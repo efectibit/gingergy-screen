@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-PaymentModal::PaymentModal(std::function<void(ChargePoint*)> onValidate)
+PaymentModal::PaymentModal(std::function<void(ChargePoint*, uint32_t)> onValidate)
 	: m_modal(nullptr)
 	, m_lblTitle(nullptr)
 	, m_lblMinutes(nullptr)
@@ -251,7 +251,7 @@ void PaymentModal::onValidatePressedCb(lv_event_t* e) {
 	uint32_t pin = 0;
 	sscanf(self->m_pinBuffer, "%lu", &pin);
 
-	self->m_onValidate(self->m_activePoint);
+	self->m_onValidate(self->m_activePoint, pin);
 }
 
 void PaymentModal::onCancelPressedCb(lv_event_t* e) {
