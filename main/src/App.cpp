@@ -111,26 +111,37 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 	m_paymentModal->show(scr, cp);
 	m_display.unlock();
 
-	esp_err_t sigErr = m_proxy.requestSignature(cp);
+	esp_err_t sigErr = m_proxy.requestPrice(cp);
 	if (sigErr != ESP_OK) {
 		ESP_LOGW(TAG_APP, "No se pudo obtener firma del esclavo (T%d). El QR usará fallback.",
 				 cp->getId());
 	}
 
+	// Loop to ask for work mode
+	ChargeWorkMode workMode = ChargeWorkMode::UNKNOWN;
+	for (int i = 0; i < 4 && workMode != ChargeWorkMode::DONE; i++) {
+		workMode = m_proxy.readWorkMode(cp);
+		vTaskDelay(pdMS_TO_TICKS(100));
+	}
+
 	// Update QR and price
 	this->m_display.lock();
+
+	if (workMode == ChargeWorkMode::DONE) {
+		this->m_proxy.readPrice(cp);
+
+		const uint8_t* sig = cp->getSignature();
+		bool hasSig = false;
+		for (int i = 0; i < 64 && !hasSig; i++) {
+			hasSig = (sig[i] != 0);
+		}
+
+		if (hasSig) {
+			this->m_paymentModal->updateQr(sig, 64);
+			this->m_paymentModal->updatePrice(cp->getPrice());
+		}
+	}
 	
-	const uint8_t* sig = cp->getSignature();
-	bool hasSig = false;
-	for (int i = 0; i < 64 && !hasSig; i++) {
-		hasSig = (sig[i] != 0);
-	}
-
-	if (hasSig) {
-		this->m_paymentModal->updateQr(sig, 64);
-		this->m_paymentModal->updatePrice(cp->getPrice());
-	}
-
 	this->m_display.unlock();
 }
 
