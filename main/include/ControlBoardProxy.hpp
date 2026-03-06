@@ -36,6 +36,11 @@ typedef struct {
 	uint8_t  signature[64];
 } input_terminal_price_response_t;
 
+typedef struct {
+	uint16_t terminal_id;
+	uint32_t user_pin;
+} holding_user_pin_request_t;
+
 #pragma pack(pop)
 
 // ============================================================================
@@ -57,6 +62,7 @@ enum {
 	CID_HOLD_PRICE = 0,             // Holding: {terminal_id, req_minutes}
 	CID_INPUT_TERMINAL_STATUS = 1,  // Input:   {terminal_id, work_mode}
 	CID_INPUT_PRICE = 2,            // Input:   {terminal_id, signature[64], price}
+	CID_HOLD_USER_PIN,
 	CID_COUNT
 };
 
@@ -110,6 +116,7 @@ private:
 	holding_terminal_price_request_t m_holdPriceReq;
 	input_terminal_status_response_t m_statusResp;
 	input_terminal_price_response_t  m_priceResp;
+	holding_user_pin_request_t m_holdPinReq;
 };
 
 #endif // CONTROL_BOARD_PROXY_HPP

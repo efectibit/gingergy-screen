@@ -53,6 +53,18 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         sizeof(input_terminal_price_response_t),
         {0}, PAR_PERMS_READ_WRITE
     },
+
+	// CID_HOLD_USER_PIN — Enviar PIN: {terminal_id, user_pin}
+    {
+        CID_HOLD_USER_PIN,
+        (char*)"UserPin", (char*)"pwd",
+        1, MB_PARAM_HOLDING,
+        0x0100, 3,
+        MB_OFFSET(holding_user_pin_request_t, terminal_id),
+        PARAM_TYPE_ASCII,
+        sizeof(holding_user_pin_request_t),
+        {0}, PAR_PERMS_READ_WRITE
+    },
 };
 
 const size_t ControlBoardProxy::m_numParameters = CID_COUNT;
@@ -66,6 +78,7 @@ ControlBoardProxy::ControlBoardProxy(uart_port_t uartNum, uint8_t slaveAddr)
     memset(&m_holdPriceReq, 0, sizeof(m_holdPriceReq));
     memset(&m_statusResp,   0, sizeof(m_statusResp));
     memset(&m_priceResp,    0, sizeof(m_priceResp));
+	memset(&m_holdPinReq,    0, sizeof(m_holdPinReq));
 }
 
 ControlBoardProxy::~ControlBoardProxy() {
@@ -165,8 +178,19 @@ esp_err_t ControlBoardProxy::requestPrice(ChargePoint* cp) {
 }
 
 esp_err_t ControlBoardProxy::sendUserPin(ChargePoint* cp, uint32_t pin) {
-    // Pendiente de re-implementación según nuevo mapa Modbus
-    return ESP_ERR_NOT_SUPPORTED;
+    if (!cp) return ESP_ERR_INVALID_ARG;
+    uint8_t type = 0;
+
+    m_holdPinReq.terminal_id = cp->getId();
+    m_holdPinReq.user_pin    = pin;
+    esp_err_t err = mbc_master_set_parameter(m_masterHandle, CID_HOLD_USER_PIN,
+                                              (uint8_t*)&m_holdPinReq, &type);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "sendUserPin: error (T%d): %s", cp->getId(), esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "T%d PIN enviado al esclavo", cp->getId());
+    }
+    return err;
 }
 
 esp_err_t ControlBoardProxy::setPointEnabled(ChargePoint* cp, bool enabled) {
