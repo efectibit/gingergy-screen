@@ -69,9 +69,9 @@ private:
 	void buildUI(lv_display_t* disp);
 
 	/**
-	 * Put all attributes of control board.
+	 * @brief Put all attributes of control board.
 	 */
-	void knowAttributes(uint8_t numPoints);
+	void knowAttributes();
 
 	// --- Subsistemas ---
 	DisplayManager      m_display;

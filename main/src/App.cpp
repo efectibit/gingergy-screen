@@ -22,7 +22,8 @@ App::App()
 {
 }
 
-void App::knowAttributes(uint8_t numPoints) {
+void App::knowAttributes() {
+	uint8_t numPoints = 0;
 	input_attributes_response_t attr = {};
 	esp_err_t err = m_proxy.readAttributes(&attr);
 	
@@ -34,7 +35,7 @@ void App::knowAttributes(uint8_t numPoints) {
 		// Aplicar límites de tiempo globales
 		ChargePoint::setGlobalTimeLimits(attr.min_charge_time, attr.max_charge_time, attr.step_charge_time);
 	} else {
-		ESP_LOGW(TAG_APP, "No se pudieron obtener atributos, usando hardcoded numPoints=%u", numPoints);
+		ESP_LOGW(TAG_APP, "No se pudieron obtener atributos para saber cantidad de puntos de carga");
 	}
 
 	// Crear los ChargePoints (ids 1-based: 1..numPoints)
@@ -60,7 +61,7 @@ void App::run() {
 	}
 
 	// 2. Get attributes of control board
-	this->knowAttributes(6);
+	this->knowAttributes();
 
 	// 3. Inicializar panel físico
 	m_display.init();
