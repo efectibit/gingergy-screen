@@ -83,6 +83,7 @@ enum {
 	CID_HOLD_USER_PIN,              // Holding: {terminal_id, user_pin}
 	CID_INPUT_VALID_PIN,            // Input:   {terminal_id, valid}
 	CID_INPUT_CHARGE_POINT_STATUS,  // Input:   {terminal_id, charge_point_status}
+	CID_INPUT_ATTRIBUTES,           // Input:   {terminals_qty, min_value, etc}
 	CID_COUNT
 };
 
@@ -133,6 +134,11 @@ public:
 	 */
 	ChargePointStatus readChargePointStatus(ChargePoint* cp);
 
+	/**
+	 * Lee los atributos globales de la placa controladora (cantidad de terminales, precios, etc).
+	 */
+	esp_err_t readAttributes(input_attributes_response_t* outAttr);
+
 	// Los siguientes métodos quedan pendientes de re-implementación o eliminación
 	esp_err_t setPointEnabled(ChargePoint* cp, bool enabled);
 	esp_err_t setUnitPrice(ChargePoint* cp, uint32_t price);
@@ -152,6 +158,7 @@ private:
 	input_terminal_price_response_t      m_priceResp;
 	input_terminal_valid_pin_response_t  m_validPinResp;
 	input_charge_point_status_response_t m_cpStatusResp;
+	input_attributes_response_t          m_attributesResp;
 };
 
 #endif // CONTROL_BOARD_PROXY_HPP

@@ -89,6 +89,18 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         sizeof(input_charge_point_status_response_t),
         {0}, PAR_PERMS_READ
     },
+
+    // CID_INPUT_ATTRIBUTES — Leer configuración global {qty, price, limits...}
+    {
+        CID_INPUT_ATTRIBUTES,
+        (char*)"Attributes", (char*)"--",
+        1, MB_PARAM_INPUT,
+        0x0400, 5,                     // Reg Start = 0x0500, Size = 5
+        MB_OFFSET(input_attributes_response_t, terminals_quantity),
+        PARAM_TYPE_ASCII,
+        sizeof(input_attributes_response_t),
+        {0}, PAR_PERMS_READ
+    },
 };
 
 const size_t ControlBoardProxy::m_numParameters = CID_COUNT;
@@ -105,6 +117,7 @@ ControlBoardProxy::ControlBoardProxy(uart_port_t uartNum, uint8_t slaveAddr)
     memset(&m_holdPinReq,   0, sizeof(m_holdPinReq));
     memset(&m_validPinResp, 0, sizeof(m_validPinResp));
     memset(&m_cpStatusResp, 0, sizeof(m_cpStatusResp));
+    memset(&m_attributesResp, 0, sizeof(m_attributesResp));
 }
 
 ControlBoardProxy::~ControlBoardProxy() {
@@ -248,6 +261,25 @@ ChargePointStatus ControlBoardProxy::readChargePointStatus(ChargePoint* cp) {
 
     ESP_LOGI(TAG, "T%d CP status: %u", cp->getId(), m_cpStatusResp.charge_point_status);
     return static_cast<ChargePointStatus>(m_cpStatusResp.charge_point_status);
+}
+
+esp_err_t ControlBoardProxy::readAttributes(input_attributes_response_t* outAttr) {
+    if (!outAttr) return ESP_ERR_INVALID_ARG;
+    uint8_t type = 0;
+    
+    esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_ATTRIBUTES,
+                                              (uint8_t*)&m_attributesResp, &type);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "readAttributes: error: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    *outAttr = m_attributesResp;
+    
+    ESP_LOGI(TAG, "Atributos recibidos: Qty=%u, MinVal=%u", 
+             m_attributesResp.terminals_quantity, m_attributesResp.minute_value);
+             
+    return ESP_OK;
 }
 
 esp_err_t ControlBoardProxy::setPointEnabled(ChargePoint* cp, bool enabled) {
