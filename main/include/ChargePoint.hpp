@@ -5,7 +5,7 @@
 /**
  * @brief Estado de un punto de carga.
  */
-enum class ChargePointStatus : uint8_t {
+enum class ChargePointStatus : uint16_t {
 	AVAILABLE,      ///< Libre y listo para usar
 	OCCUPIED,       ///< En uso
 	FAULT,          ///< Error de hardware
