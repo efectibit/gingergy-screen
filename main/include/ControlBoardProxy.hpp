@@ -41,6 +41,16 @@ typedef struct {
 	uint32_t user_pin;
 } holding_user_pin_request_t;
 
+typedef struct {
+	uint16_t terminal_id;
+	uint16_t valid;
+} input_terminal_valid_pin_response_t;
+
+typedef struct {
+	uint16_t terminal_id;
+	uint16_t charge_point_status;
+} input_charge_point_status_response_t;
+
 #pragma pack(pop)
 
 // ============================================================================
