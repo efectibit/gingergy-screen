@@ -25,10 +25,9 @@
 class App {
 public:
 	/**
-	 * @param numPoints  Número de puntos de carga manejados por la
-	 *                   placa controladora (1 a 6).
+	 * Just create application
 	 */
-	explicit App(uint8_t numPoints);
+	explicit App();
 
 	/**
 	 * @brief Inicializa todos los subsistemas y entra al loop principal.
@@ -68,6 +67,11 @@ private:
 	 *        una vez que LVGL está listo (desde la tarea GUI en Core 1).
 	 */
 	void buildUI(lv_display_t* disp);
+
+	/**
+	 * Put all attributes of control board.
+	 */
+	void knowAttributes(uint8_t numPoints);
 
 	// --- Subsistemas ---
 	DisplayManager      m_display;

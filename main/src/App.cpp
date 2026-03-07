@@ -13,13 +13,16 @@ static constexpr int         MODBUS_RX_PIN = 18;
 // =============================================================================
 // Constructor
 // =============================================================================
-App::App(uint8_t numPoints)
+App::App()
 	: m_display()
 	, m_proxy(MODBUS_UART, MODBUS_ADDR)
 	, m_terminalBar(nullptr)
 	, m_selectionScreen(nullptr)
 	, m_paymentModal(nullptr)
 {
+}
+
+void App::knowAttributes(uint8_t numPoints) {
 	// Crear los ChargePoints (ids 1-based: 1..numPoints)
 	m_chargePoints.reserve(numPoints);
 	for (uint8_t i = 1; i <= numPoints; i++) {
@@ -41,10 +44,13 @@ void App::run() {
 		ESP_LOGE(TAG_APP, "Fallo al inicializar Modbus: %s", esp_err_to_name(err));
 	}
 
-	// 2. Inicializar panel físico
+	// 2. Get attributes of control board
+	this->knowAttributes(6);
+
+	// 3. Inicializar panel físico
 	m_display.init();
 
-	// 3. Arrancar LVGL en Core 1; se llama buildUI() cuando LVGL esté listo
+	// 4. Arrancar LVGL en Core 1; se llama buildUI() cuando LVGL esté listo
 	m_display.startGuiTask([this](lv_display_t* disp) {
 		this->buildUI(disp);
 	});
@@ -184,6 +190,6 @@ void App::syncChargePointStatus() {
 
 extern "C" void app_main() {
 	// 6 puntos de carga gestionados por la placa controladora
-	static App app(6);
+	static App app();
 	app.run();
 }
