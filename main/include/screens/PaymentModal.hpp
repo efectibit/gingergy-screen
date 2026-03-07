@@ -19,13 +19,13 @@ class CryptoPayment;
  *
  * Layout:
  *  ┌──────────────────────────────────────┐
- *  │  START CHARGING - TERMINAL XX        │
+ *  │  START CHARGING - TERMINAL 0X        │
  *  │  [QR binario]   ENTER PIN [XXXXXX]   │
- *  │  SCAN TO PAY    [1][2][3]            │
- *  │                 [4][5][6]            │
- *  │                 [7][8][DEL]          │
- *  │                 [*][0][OK]           │
- *  │         [   VALIDATE PIN   ]         │
+ *  │  SCAN TO PAY        [7][8][9]        │
+ *  │                     [4][5][6]        │
+ *  │                     [1][2][3]        │
+ *  │                     [  0 ][X]        │
+ *  │     [ CANCEL ]    [ VALIDATE ]       │
  *  └──────────────────────────────────────┘
  */
 class PaymentModal {
