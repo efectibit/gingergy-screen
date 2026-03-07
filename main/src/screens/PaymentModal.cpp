@@ -59,12 +59,12 @@ void PaymentModal::show(lv_obj_t* scr, ChargePoint* cp) {
 	lv_obj_set_style_text_font(m_lblMinutes, &lv_font_montserrat_22, 0);
 	lv_obj_align(m_lblMinutes, LV_ALIGN_TOP_LEFT, 50, 60);
 
-	// Precio viene del esclavo (3 decimales implícitos), o estimación local si aún no hay firma
+	// Precio viene del esclavo (2 decimales implícitos), o estimación local si aún no hay firma
 	uint32_t priceRaw = cp->getPrice();
 	m_lblPrice = lv_label_create(box);
 	if (priceRaw > 0) {
-		// Formatear precio con 3 decimales: 12345 → "12.345"
-		lv_label_set_text_fmt(m_lblPrice, "S/ %lu.%03lu", (unsigned long)(priceRaw / 1000), (unsigned long)(priceRaw % 1000));
+		// Formatear precio con 2 decimales: 12345 → "123.45"
+		lv_label_set_text_fmt(m_lblPrice, "S/ %lu.%02lu", (unsigned long)(priceRaw / 100), (unsigned long)(priceRaw % 100));
 	} else {
 		// Aún no se ha solicitado la firma al esclavo
 		lv_label_set_text(m_lblPrice, "S/ ---");
@@ -189,7 +189,7 @@ void PaymentModal::updateQr(const uint8_t* payload, size_t len) {
 
 void PaymentModal::updatePrice(uint32_t priceRaw) {
 	if (this->m_lblPrice) {
-		lv_label_set_text_fmt(this->m_lblPrice, "S/ %lu.%03lu", (unsigned long)(priceRaw / 1000), (unsigned long)(priceRaw % 1000));
+		lv_label_set_text_fmt(this->m_lblPrice, "S/ %lu.%02lu", (unsigned long)(priceRaw / 100), (unsigned long)(priceRaw % 100));
 	}
 }
 
