@@ -39,7 +39,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_terminal_status_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_terminal_status_response_t),
-        {0}, PAR_PERMS_READ_WRITE
+        {0}, PAR_PERMS_READ
     },
 
     // CID_INPUT_PRICE — Leer terminal_id + signature + price
@@ -51,7 +51,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_terminal_price_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_terminal_price_response_t),
-        {0}, PAR_PERMS_READ_WRITE
+        {0}, PAR_PERMS_READ
     },
 
 	// CID_HOLD_USER_PIN — Enviar PIN: {terminal_id, user_pin}
@@ -63,7 +63,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(holding_user_pin_request_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(holding_user_pin_request_t),
-        {0}, PAR_PERMS_READ_WRITE
+        {0}, PAR_PERMS_WRITE
     },
 };
 
