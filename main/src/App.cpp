@@ -23,7 +23,20 @@ App::App()
 }
 
 void App::knowAttributes(uint8_t numPoints) {
+	input_attributes_response_t attr = {};
+	esp_err_t err = m_proxy.readAttributes(&attr);
+	
+	if (err == ESP_OK) {
+		ESP_LOGI(TAG_APP, "Atributos dinámicos detectados: Terminals=%u, MinTime=%u", 
+				 attr.terminals_quantity, attr.min_charge_time);
+		numPoints = attr.terminals_quantity;
+		// Aquí podrías guardar otros atributos como minute_value en los ChargePoints si fuera necesario
+	} else {
+		ESP_LOGW(TAG_APP, "No se pudieron obtener atributos, usando hardcoded numPoints=%u", numPoints);
+	}
+
 	// Crear los ChargePoints (ids 1-based: 1..numPoints)
+	m_chargePoints.clear();
 	m_chargePoints.reserve(numPoints);
 	for (uint8_t i = 1; i <= numPoints; i++) {
 		m_chargePoints.emplace_back(i);
