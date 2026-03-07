@@ -156,13 +156,26 @@ void App::onPaymentValidate(ChargePoint* cp, uint32_t pin) {
 	if (err != ESP_OK) {
 		ESP_LOGE(TAG_APP, "Modbus falló al enviar comando al terminal %d", cp->getId());
 	}
+	
+	// Loop to ask for work mode
+	ChargeWorkMode workMode = ChargeWorkMode::UNKNOWN;
+	for (int i = 0; i < 4 && workMode != ChargeWorkMode::DONE; i++) {
+		vTaskDelay(pdMS_TO_TICKS(150));
+		workMode = m_proxy.readWorkMode(cp);
+	}
 
-	m_display.lock();
-	m_paymentModal->hide();
-	cp->resetTime();
-	m_terminalBar->refreshIcon(cp->getId());
-	m_selectionScreen->updateDisplay();
-	m_display.unlock();
+	if (workMode == ChargeWorkMode::DONE) {
+		vTaskDelay(pdMS_TO_TICKS(100));
+		bool validPin = this->m_proxy.readValidPin(cp);
+		if (validPin) { 
+			m_display.lock();
+			m_paymentModal->hide();
+			cp->resetTime();
+			m_terminalBar->refreshIcon(cp->getId());
+			m_selectionScreen->updateDisplay();
+			m_display.unlock();	
+		}
+	}
 }
 
 void App::syncChargePointStatus() {
