@@ -120,14 +120,15 @@ void App::onTimeConfirmed(ChargePoint* cp) {
 	// Loop to ask for work mode
 	ChargeWorkMode workMode = ChargeWorkMode::UNKNOWN;
 	for (int i = 0; i < 4 && workMode != ChargeWorkMode::DONE; i++) {
+		vTaskDelay(pdMS_TO_TICKS(150));
 		workMode = m_proxy.readWorkMode(cp);
-		vTaskDelay(pdMS_TO_TICKS(100));
 	}
 
 	// Update QR and price
 	this->m_display.lock();
 
 	if (workMode == ChargeWorkMode::DONE) {
+		vTaskDelay(pdMS_TO_TICKS(100));
 		this->m_proxy.readPrice(cp);
 
 		const uint8_t* sig = cp->getSignature();
