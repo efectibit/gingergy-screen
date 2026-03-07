@@ -12,6 +12,7 @@ ChargePoint::ChargePoint(uint8_t id)
 	, m_price(0)
 	, m_energy(0)
 	, m_elapsedTime(0)
+	, m_remainingTime(0)
 {
 	memset(m_signature, 0, sizeof(m_signature));
 }

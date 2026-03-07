@@ -101,6 +101,18 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         sizeof(input_attributes_response_t),
         {0}, PAR_PERMS_READ
     },
+
+    // CID_INPUT_ALL_STATUS — Leer todos los estados {status, time, energy} x 10
+    {
+        CID_INPUT_ALL_STATUS,
+        (char*)"AllStatusBulk", (char*)"--",
+        1, MB_PARAM_INPUT,
+        0x3000, MAX_TERMINALS * 3,     // Reg Start = 0x3000, Size = 30
+        MB_OFFSET(input_all_status_response_t, terminals),
+        PARAM_TYPE_ASCII,
+        sizeof(input_all_status_response_t),
+        {0}, PAR_PERMS_READ
+    },
 };
 
 const size_t ControlBoardProxy::m_numParameters = CID_COUNT;
@@ -118,6 +130,7 @@ ControlBoardProxy::ControlBoardProxy(uart_port_t uartNum, uint8_t slaveAddr)
     memset(&m_validPinResp, 0, sizeof(m_validPinResp));
     memset(&m_cpStatusResp, 0, sizeof(m_cpStatusResp));
     memset(&m_attributesResp, 0, sizeof(m_attributesResp));
+    memset(&m_allStatusResp, 0, sizeof(m_allStatusResp));
 }
 
 ControlBoardProxy::~ControlBoardProxy() {
@@ -279,6 +292,21 @@ esp_err_t ControlBoardProxy::readAttributes(input_attributes_response_t* outAttr
     ESP_LOGI(TAG, "Atributos recibidos: Qty=%u, MinVal=%u", 
              m_attributesResp.terminals_quantity, m_attributesResp.minute_value);
              
+    return ESP_OK;
+}
+
+esp_err_t ControlBoardProxy::readAllStatuses(input_all_status_response_t* outData) {
+    if (!outData) return ESP_ERR_INVALID_ARG;
+    uint8_t type = 0;
+    
+    esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_ALL_STATUS,
+                                              (uint8_t*)&m_allStatusResp, &type);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "readAllStatuses: error: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    *outData = m_allStatusResp;
     return ESP_OK;
 }
 

@@ -201,7 +201,24 @@ void App::onPaymentValidate(ChargePoint* cp, uint32_t pin) {
 }
 
 void App::syncChargePointStatus() {
-	// Por implementar cuando ModbusClient esté completo
+	input_all_status_response_t bulkData = {};
+	esp_err_t err = m_proxy.readAllStatuses(&bulkData);
+	
+	if (err != ESP_OK) {
+		ESP_LOGW(TAG_APP, "Fallo al sincronizar estados masivos: %s", esp_err_to_name(err));
+		return;
+	}
+
+	for (size_t i = 0; i < m_chargePoints.size(); i++) {
+		if (i >= MAX_TERMINALS) break;
+
+		terminal_status_block_t& data = bulkData.terminals[i];
+		ChargePoint& cp = m_chargePoints[i];
+
+		cp.setStatus(static_cast<ChargePointStatus>(data.status));
+		cp.setRemainingTime(data.remaining_time);
+		cp.setEnergy(data.used_energy);
+	}
 }
 
 extern "C" void app_main() {

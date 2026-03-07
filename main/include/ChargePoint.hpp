@@ -87,6 +87,10 @@ public:
 	uint16_t getElapsedTime() const { return m_elapsedTime; }
 	void     setElapsedTime(uint16_t t) { m_elapsedTime = t; }
 
+	/** Minutos restantes de carga. */
+	uint16_t getRemainingTime() const { return m_remainingTime; }
+	void     setRemainingTime(uint16_t t) { m_remainingTime = t; }
+
 private:
 	static uint16_t s_timeStep;
 	static uint16_t s_timeMin;
@@ -102,4 +106,5 @@ private:
 	uint32_t m_price;
 	uint16_t m_energy;
 	uint16_t m_elapsedTime;
+	uint16_t m_remainingTime;
 };

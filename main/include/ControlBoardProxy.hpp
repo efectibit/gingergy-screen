@@ -16,6 +16,18 @@
 
 #pragma pack(push, 1)
 
+#define MAX_TERMINALS 10
+
+typedef struct {
+	uint16_t status;
+	uint16_t remaining_time;
+	uint16_t used_energy;
+} terminal_status_block_t;
+
+typedef struct {
+	terminal_status_block_t terminals[MAX_TERMINALS];
+} input_all_status_response_t;
+
 // "Terminal" refers to a charge point
 // "Device" refers to the control board
 
@@ -84,6 +96,7 @@ enum {
 	CID_INPUT_VALID_PIN,            // Input:   {terminal_id, valid}
 	CID_INPUT_CHARGE_POINT_STATUS,  // Input:   {terminal_id, charge_point_status}
 	CID_INPUT_ATTRIBUTES,           // Input:   {terminals_qty, min_value, etc}
+	CID_INPUT_ALL_STATUS,           // Input:   {terminal_status_block_t[MAX_TERMINALS]}
 	CID_COUNT
 };
 
@@ -139,6 +152,11 @@ public:
 	 */
 	esp_err_t readAttributes(input_attributes_response_t* outAttr);
 
+	/**
+	 * Lee el estado de todos los puntos de carga en una sola ráfaga.
+	 */
+	esp_err_t readAllStatuses(input_all_status_response_t* outData);
+
 	// Los siguientes métodos quedan pendientes de re-implementación o eliminación
 	esp_err_t setPointEnabled(ChargePoint* cp, bool enabled);
 	esp_err_t setUnitPrice(ChargePoint* cp, uint32_t price);
@@ -159,6 +177,7 @@ private:
 	input_terminal_valid_pin_response_t  m_validPinResp;
 	input_charge_point_status_response_t m_cpStatusResp;
 	input_attributes_response_t          m_attributesResp;
+	input_all_status_response_t          m_allStatusResp;
 };
 
 #endif // CONTROL_BOARD_PROXY_HPP
