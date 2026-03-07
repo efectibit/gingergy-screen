@@ -257,24 +257,26 @@ void PaymentModal::showConfirmDialog() {
 
 	// Creamos un overlay transparente que ocupe todo m_modal para bloquear clics de fondo
 	m_confirmMboxOverlay = lv_obj_create(m_modal);
-	lv_obj_set_size(m_confirmMboxOverlay, 800, 480);
-	lv_obj_set_style_bg_opa(m_confirmMboxOverlay, LV_OPA_0, 0); // Invisible
+	lv_obj_set_size(m_confirmMboxOverlay, 600, 420);
+	lv_obj_set_style_bg_color(m_confirmMboxOverlay, lv_color_black(), 0);
+	lv_obj_set_style_bg_opa(m_confirmMboxOverlay, LV_OPA_70, 0);
 	lv_obj_set_style_border_width(m_confirmMboxOverlay, 0, 0);
 	lv_obj_add_flag(m_confirmMboxOverlay, LV_OBJ_FLAG_CLICKABLE); // Asegurar que capture clics
 
 	m_confirmMbox = lv_msgbox_create(m_modal);
 	lv_msgbox_add_title(m_confirmMbox, "Confirmación");
 	lv_msgbox_add_text(m_confirmMbox, "¿Estás seguro que deseas cerrar?");
-	
+
 	lv_obj_t * btn;
 	btn = lv_msgbox_add_footer_button(m_confirmMbox, "Sí");
 	lv_obj_add_event_cb(btn, onConfirmYesPressedCb, LV_EVENT_CLICKED, this);
-	
+
 	btn = lv_msgbox_add_footer_button(m_confirmMbox, "No");
 	lv_obj_add_event_cb(btn, onConfirmNoPressedCb, LV_EVENT_CLICKED, this);
 
 	// Centrar en pantalla
 	lv_obj_center(m_confirmMbox);
+	lv_obj_center(m_confirmMboxOverlay);
 }
 
 void PaymentModal::onConfirmYesPressedCb(lv_event_t* e) {
@@ -284,7 +286,7 @@ void PaymentModal::onConfirmYesPressedCb(lv_event_t* e) {
 
 void PaymentModal::onConfirmNoPressedCb(lv_event_t* e) {
 	auto* self = static_cast<PaymentModal*>(lv_event_get_user_data(e));
-	
+
 	if (self->m_confirmMbox) {
 		lv_msgbox_close(self->m_confirmMbox);
 		self->m_confirmMbox = nullptr;
