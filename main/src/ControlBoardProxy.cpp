@@ -59,11 +59,35 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         CID_HOLD_USER_PIN,
         (char*)"UserPin", (char*)"pwd",
         1, MB_PARAM_HOLDING,
-        0x0100, 3,
+        0x0100, 3,                     // Reg Start = 0x0100, Size = 3 (1 + 2)
         MB_OFFSET(holding_user_pin_request_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(holding_user_pin_request_t),
-        {0}, PAR_PERMS_WRITE
+        {0}, PAR_PERMS_READ_WRITE
+    },
+
+    // CID_INPUT_VALID_PIN — Leer si el PIN es válido {terminal_id, valid}
+    {
+        CID_INPUT_VALID_PIN,
+        (char*)"ValidPin", (char*)"--",
+        1, MB_PARAM_INPUT,
+        0x0200, 2,                     // Reg Start = 0x0100, Size = 2 (id + valid)
+        MB_OFFSET(input_terminal_valid_pin_response_t, terminal_id),
+        PARAM_TYPE_ASCII,
+        sizeof(input_terminal_valid_pin_response_t),
+        {0}, PAR_PERMS_READ
+    },
+
+    // CID_INPUT_CHARGE_POINT_STATUS — Leer estado global {terminal_id, status}
+    {
+        CID_INPUT_CHARGE_POINT_STATUS,
+        (char*)"CPStatus", (char*)"--",
+        1, MB_PARAM_INPUT,
+        0x0300, 2,                     // Reg Start = 0x0200, Size = 2 (id + status)
+        MB_OFFSET(input_charge_point_status_response_t, terminal_id),
+        PARAM_TYPE_ASCII,
+        sizeof(input_charge_point_status_response_t),
+        {0}, PAR_PERMS_READ
     },
 };
 
@@ -78,7 +102,9 @@ ControlBoardProxy::ControlBoardProxy(uart_port_t uartNum, uint8_t slaveAddr)
     memset(&m_holdPriceReq, 0, sizeof(m_holdPriceReq));
     memset(&m_statusResp,   0, sizeof(m_statusResp));
     memset(&m_priceResp,    0, sizeof(m_priceResp));
-	memset(&m_holdPinReq,    0, sizeof(m_holdPinReq));
+    memset(&m_holdPinReq,   0, sizeof(m_holdPinReq));
+    memset(&m_validPinResp, 0, sizeof(m_validPinResp));
+    memset(&m_cpStatusResp, 0, sizeof(m_cpStatusResp));
 }
 
 ControlBoardProxy::~ControlBoardProxy() {
@@ -192,6 +218,36 @@ esp_err_t ControlBoardProxy::sendUserPin(ChargePoint* cp, uint32_t pin) {
         ESP_LOGI(TAG, "T%d PIN enviado al esclavo", cp->getId());
     }
     return err;
+}
+
+bool ControlBoardProxy::readValidPin(ChargePoint* cp) {
+    if (!cp) return false;
+    uint8_t type = 0;
+    m_validPinResp.terminal_id = cp->getId();
+    esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_VALID_PIN,
+                                              (uint8_t*)&m_validPinResp, &type);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "readValidPin: error (T%d): %s", cp->getId(), esp_err_to_name(err));
+        return false;
+    }
+
+    ESP_LOGI(TAG, "T%d PIN valid? %u", cp->getId(), m_validPinResp.valid);
+    return (m_validPinResp.valid != 0);
+}
+
+ChargePointStatus ControlBoardProxy::readChargePointStatus(ChargePoint* cp) {
+    if (!cp) return ChargePointStatus::FAULT;
+    uint8_t type = 0;
+    m_cpStatusResp.terminal_id = cp->getId();
+    esp_err_t err = mbc_master_get_parameter(m_masterHandle, CID_INPUT_CHARGE_POINT_STATUS,
+                                              (uint8_t*)&m_cpStatusResp, &type);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "readChargePointStatus: error (T%d): %s", cp->getId(), esp_err_to_name(err));
+        return ChargePointStatus::FAULT;
+    }
+
+    ESP_LOGI(TAG, "T%d CP status: %u", cp->getId(), m_cpStatusResp.charge_point_status);
+    return static_cast<ChargePointStatus>(m_cpStatusResp.charge_point_status);
 }
 
 esp_err_t ControlBoardProxy::setPointEnabled(ChargePoint* cp, bool enabled) {

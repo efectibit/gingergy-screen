@@ -46,7 +46,7 @@ typedef struct {
 	uint16_t valid;
 } input_terminal_valid_pin_response_t;
 
-typedef struct {
+typedef struct { // For tracking ChargePointStatus
 	uint16_t terminal_id;
 	uint16_t charge_point_status;
 } input_charge_point_status_response_t;
@@ -72,7 +72,9 @@ enum {
 	CID_HOLD_PRICE = 0,             // Holding: {terminal_id, req_minutes}
 	CID_INPUT_TERMINAL_STATUS = 1,  // Input:   {terminal_id, work_mode}
 	CID_INPUT_PRICE = 2,            // Input:   {terminal_id, signature[64], price}
-	CID_HOLD_USER_PIN,
+	CID_HOLD_USER_PIN,              // Holding: {terminal_id, user_pin}
+	CID_INPUT_VALID_PIN,            // Input:   {terminal_id, valid}
+	CID_INPUT_CHARGE_POINT_STATUS,  // Input:   {terminal_id, charge_point_status}
 	CID_COUNT
 };
 
@@ -108,9 +110,22 @@ public:
 	 */
 	esp_err_t requestPrice(ChargePoint* cp);
 
-	// Los siguientes métodos quedan pendientes de re-implementación con las nuevas estructuras
-	// o se eliminarán si la lógica cambia a favor del polleo de estado.
+	/**
+	 * Envía el PIN del usuario al esclavo para que lo valide.
+	 */
 	esp_err_t sendUserPin(ChargePoint* cp, uint32_t pin);
+
+	/**
+	 * Lee si el PIN enviado es válido.
+	 */
+	bool readValidPin(ChargePoint* cp);
+
+	/**
+	 * Lee el estado global del punto de carga (AVAILABLE, OCCUPIED, etc).
+	 */
+	ChargePointStatus readChargePointStatus(ChargePoint* cp);
+
+	// Los siguientes métodos quedan pendientes de re-implementación o eliminación
 	esp_err_t setPointEnabled(ChargePoint* cp, bool enabled);
 	esp_err_t setUnitPrice(ChargePoint* cp, uint32_t price);
 
@@ -123,10 +138,12 @@ private:
 	static const size_t m_numParameters;
 
 	// Buffers físicos granulares
-	holding_terminal_price_request_t m_holdPriceReq;
-	input_terminal_status_response_t m_statusResp;
-	input_terminal_price_response_t  m_priceResp;
-	holding_user_pin_request_t m_holdPinReq;
+	holding_terminal_price_request_t     m_holdPriceReq;
+	holding_user_pin_request_t           m_holdPinReq;
+	input_terminal_status_response_t     m_statusResp;
+	input_terminal_price_response_t      m_priceResp;
+	input_terminal_valid_pin_response_t  m_validPinResp;
+	input_charge_point_status_response_t m_cpStatusResp;
 };
 
 #endif // CONTROL_BOARD_PROXY_HPP
