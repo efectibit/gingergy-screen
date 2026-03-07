@@ -1,14 +1,25 @@
 #include "ChargePoint.hpp"
 
+// Inicialización de miembros estáticos con valores por defecto
+uint16_t ChargePoint::s_timeMin  = 15;
+uint16_t ChargePoint::s_timeMax  = 120;
+uint16_t ChargePoint::s_timeStep = 15;
+
 ChargePoint::ChargePoint(uint8_t id)
 	: m_id(id)
 	, m_status(ChargePointStatus::AVAILABLE)
-	, m_selectedMinutes(TIME_MIN_MIN)
+	, m_selectedMinutes(s_timeMin)
 	, m_price(0)
 	, m_energy(0)
 	, m_elapsedTime(0)
 {
 	memset(m_signature, 0, sizeof(m_signature));
+}
+
+void ChargePoint::setGlobalTimeLimits(uint16_t min, uint16_t max, uint16_t step) {
+	if (min > 0) s_timeMin = min;
+	if (max > min) s_timeMax = max;
+	if (step > 0) s_timeStep = step;
 }
 
 uint8_t ChargePoint::getId() const {
@@ -28,18 +39,18 @@ bool ChargePoint::isAvailable() const {
 }
 
 bool ChargePoint::incrementTime() {
-	if (this->m_selectedMinutes >= TIME_MAX_MIN) {
+	if (this->m_selectedMinutes >= s_timeMax) {
 		return false;
 	}
-	this->m_selectedMinutes += TIME_STEP_MIN;
+	this->m_selectedMinutes += s_timeStep;
 	return true;
 }
 
 bool ChargePoint::decrementTime() {
-	if (this->m_selectedMinutes <= TIME_MIN_MIN) {
+	if (this->m_selectedMinutes <= s_timeMin) {
 		return false;
 	}
-	this->m_selectedMinutes -= TIME_STEP_MIN;
+	this->m_selectedMinutes -= s_timeStep;
 	return true;
 }
 
@@ -48,5 +59,5 @@ uint16_t ChargePoint::getSelectedMinutes() const {
 }
 
 void ChargePoint::resetTime() {
-	this->m_selectedMinutes = TIME_MIN_MIN;
+	this->m_selectedMinutes = s_timeMin;
 }

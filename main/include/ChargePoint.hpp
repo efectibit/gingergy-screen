@@ -42,14 +42,19 @@ public:
 	bool              isAvailable() const;
 
 	// --- Selección de tiempo ---
+	static void setGlobalTimeLimits(uint16_t min, uint16_t max, uint16_t step);
+	static uint16_t getMinTime()  { return s_timeMin; }
+	static uint16_t getMaxTime()  { return s_timeMax; }
+	static uint16_t getTimeStep() { return s_timeStep; }
+
 	/**
-	 * @brief Incrementa el tiempo seleccionado en 15 minutos.
+	 * @brief Incrementa el tiempo seleccionado en el paso configurado.
 	 * @return true si el incremento fue posible, false si ya estaba al máximo.
 	 */
 	bool incrementTime();
 
 	/**
-	 * @brief Decrementa el tiempo seleccionado en 15 minutos.
+	 * @brief Decrementa el tiempo seleccionado en el paso configurado.
 	 * @return true si el decremento fue posible, false si ya estaba al mínimo.
 	 */
 	bool decrementTime();
@@ -57,7 +62,7 @@ public:
 	uint16_t getSelectedMinutes() const;
 
 	/**
-	 * @brief Resetea el tiempo seleccionado al valor mínimo (15 min).
+	 * @brief Resetea el tiempo seleccionado al valor mínimo configurado.
 	 */
 	void resetTime();
 
@@ -83,9 +88,9 @@ public:
 	void     setElapsedTime(uint16_t t) { m_elapsedTime = t; }
 
 private:
-	static constexpr uint16_t TIME_STEP_MIN = 15;
-	static constexpr uint16_t TIME_MIN_MIN  = 15;
-	static constexpr uint16_t TIME_MAX_MIN  = 120;
+	static uint16_t s_timeStep;
+	static uint16_t s_timeMin;
+	static uint16_t s_timeMax;
 
 	// Identidad y estado local
 	uint8_t           m_id;

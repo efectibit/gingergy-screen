@@ -27,10 +27,12 @@ void App::knowAttributes(uint8_t numPoints) {
 	esp_err_t err = m_proxy.readAttributes(&attr);
 	
 	if (err == ESP_OK) {
-		ESP_LOGI(TAG_APP, "Atributos dinámicos detectados: Terminals=%u, MinTime=%u", 
-				 attr.terminals_quantity, attr.min_charge_time);
+		ESP_LOGI(TAG_APP, "Atributos dinámicos detectados: Terminals=%u, MinTime=%u, MaxTime=%u, Step=%u", 
+				 attr.terminals_quantity, attr.min_charge_time, attr.max_charge_time, attr.step_charge_time);
 		numPoints = attr.terminals_quantity;
-		// Aquí podrías guardar otros atributos como minute_value en los ChargePoints si fuera necesario
+		
+		// Aplicar límites de tiempo globales
+		ChargePoint::setGlobalTimeLimits(attr.min_charge_time, attr.max_charge_time, attr.step_charge_time);
 	} else {
 		ESP_LOGW(TAG_APP, "No se pudieron obtener atributos, usando hardcoded numPoints=%u", numPoints);
 	}

@@ -137,11 +137,11 @@ void TimeSelectionScreen::updateDisplay() {
 }
 
 uint16_t TimeSelectionScreen::minutesToArcAngle(uint16_t minutes) const {
-	const uint16_t MIN_TIME = 15;
-	const uint16_t MAX_TIME = 120;
+	const uint16_t MIN_TIME = ChargePoint::getMinTime();
+	const uint16_t MAX_TIME = ChargePoint::getMaxTime();
 	if (minutes <= MIN_TIME) return 0;
 	if (minutes >= MAX_TIME) return 180;
-	// Interpolar de [15, 120] a [0, 180]
+	// Interpolar de [min, max] a [0, 180]
 	return ((minutes - MIN_TIME) * 180) / (MAX_TIME - MIN_TIME);
 }
 
