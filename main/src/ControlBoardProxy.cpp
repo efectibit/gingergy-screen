@@ -27,7 +27,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(holding_terminal_price_request_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(holding_terminal_price_request_t),
-        {0}, PAR_PERMS_READ_WRITE
+        OPTS(0, 0, 0), PAR_PERMS_READ_WRITE
     },
 
     // CID_INPUT_TERMINAL_STATUS — Leer terminal_id + work_mode
@@ -39,7 +39,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_terminal_status_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_terminal_status_response_t),
-        {0}, PAR_PERMS_READ
+        OPTS(0, 0, 0), PAR_PERMS_READ
     },
 
     // CID_INPUT_PRICE — Leer terminal_id + signature + price
@@ -51,7 +51,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_terminal_price_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_terminal_price_response_t),
-        {0}, PAR_PERMS_READ
+        OPTS(0, 0, 0), PAR_PERMS_READ
     },
 
 	// CID_HOLD_USER_PIN — Enviar PIN: {terminal_id, user_pin}
@@ -63,7 +63,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(holding_user_pin_request_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(holding_user_pin_request_t),
-        {0}, PAR_PERMS_READ_WRITE
+        OPTS(0, 0, 0), PAR_PERMS_READ_WRITE
     },
 
     // CID_INPUT_VALID_PIN — Leer si el PIN es válido {terminal_id, valid}
@@ -75,7 +75,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_terminal_valid_pin_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_terminal_valid_pin_response_t),
-        {0}, PAR_PERMS_READ
+        OPTS(0, 0, 0), PAR_PERMS_READ
     },
 
     // CID_INPUT_CHARGE_POINT_STATUS — Leer estado global {terminal_id, status}
@@ -87,7 +87,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_charge_point_status_response_t, terminal_id),
         PARAM_TYPE_ASCII,
         sizeof(input_charge_point_status_response_t),
-        {0}, PAR_PERMS_READ
+        OPTS(0, 0, 0), PAR_PERMS_READ
     },
 
     // CID_INPUT_ATTRIBUTES — Leer configuración global {qty, price, limits...}
@@ -99,7 +99,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_attributes_response_t, terminals_quantity),
         PARAM_TYPE_ASCII,
         sizeof(input_attributes_response_t),
-        {0}, PAR_PERMS_READ
+        OPTS(0, 0, 0), PAR_PERMS_READ
     },
 
     // CID_INPUT_ALL_STATUS — Leer todos los estados {status, time, energy} x 10
@@ -111,7 +111,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         MB_OFFSET(input_all_status_response_t, terminals),
         PARAM_TYPE_ASCII,
         sizeof(input_all_status_response_t),
-        {0}, PAR_PERMS_READ
+        OPTS(0, 0, 0), PAR_PERMS_READ
     },
 };
 

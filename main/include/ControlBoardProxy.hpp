@@ -73,6 +73,9 @@ typedef struct {
 
 #pragma pack(pop)
 
+// Options can be used as bit masks or parameter limits
+#define OPTS(min_val, max_val, step_val) { .opt1 = min_val, .opt2 = max_val, .opt3 = step_val }
+
 // ============================================================================
 // MACROS — Para cálculo dinámico de registros
 // ============================================================================
