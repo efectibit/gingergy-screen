@@ -189,7 +189,7 @@ void App::syncChargePointStatus() {
 }
 
 extern "C" void app_main() {
-	// 6 puntos de carga gestionados por la placa controladora
-	static App app();
+	// Puntos de carga detectados dinámicamente por knowAttributes()
+	static App app;
 	app.run();
 }
