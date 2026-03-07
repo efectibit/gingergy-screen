@@ -62,8 +62,11 @@ private:
 	static void onKeyPressedCb    (lv_event_t* e);
 	static void onValidatePressedCb(lv_event_t* e);
 	static void onCancelPressedCb(lv_event_t* e);
+	static void onConfirmYesPressedCb(lv_event_t* e);
+	static void onConfirmNoPressedCb(lv_event_t* e);
 
 	// --- Helpers ---
+	void showConfirmDialog();
 	void appendPinChar(char c);
 	void deletePinChar();
 	void clearPin();

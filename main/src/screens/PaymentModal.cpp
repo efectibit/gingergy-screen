@@ -245,7 +245,33 @@ void PaymentModal::onValidatePressedCb(lv_event_t* e) {
 
 void PaymentModal::onCancelPressedCb(lv_event_t* e) {
 	auto* self = static_cast<PaymentModal*>(lv_event_get_user_data(e));
+	self->showConfirmDialog();
+}
+
+void PaymentModal::showConfirmDialog() {
+	lv_obj_t * mbox = lv_msgbox_create(m_modal);
+	lv_msgbox_add_title(mbox, "Confirmación");
+	lv_msgbox_add_text(mbox, "¿Estás seguro que deseas cerrar?");
+	
+	lv_obj_t * btn;
+	btn = lv_msgbox_add_footer_button(mbox, "Sí");
+	lv_obj_add_event_cb(btn, onConfirmYesPressedCb, LV_EVENT_CLICKED, this);
+	
+	btn = lv_msgbox_add_footer_button(mbox, "No");
+	lv_obj_add_event_cb(btn, onConfirmNoPressedCb, LV_EVENT_CLICKED, mbox);
+
+	// Center of screen
+	lv_obj_center(mbox);
+}
+
+void PaymentModal::onConfirmYesPressedCb(lv_event_t* e) {
+	auto* self = static_cast<PaymentModal*>(lv_event_get_user_data(e));
 	self->hide();
+}
+
+void PaymentModal::onConfirmNoPressedCb(lv_event_t* e) {
+	lv_obj_t* mbox = (lv_obj_t*)lv_event_get_user_data(e);
+	lv_msgbox_close(mbox);
 }
 
 void PaymentModal::appendPinChar(char c) {
