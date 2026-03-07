@@ -152,6 +152,7 @@ esp_err_t ControlBoardProxy::readPrice(ChargePoint* cp) {
     }
 
     cp->setSignature(m_priceResp.signature);
+    ESP_LOG_BUFFER_HEX(TAG, m_priceResp.signature, sizeof(m_priceResp.signature));
     cp->setPrice(m_priceResp.price);
     
     ESP_LOGI(TAG, "T%d firma y precio (%lu) recibidos", cp->getId(), (unsigned long)m_priceResp.price);
