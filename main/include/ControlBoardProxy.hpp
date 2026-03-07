@@ -51,6 +51,14 @@ typedef struct { // For tracking ChargePointStatus
 	uint16_t charge_point_status;
 } input_charge_point_status_response_t;
 
+typedef struct {
+	uint16_t terminals_quantity;
+	uint16_t minute_value;
+	uint16_t min_charge_time;
+	uint16_t max_charge_time;
+	uint16_t step_charge_time;
+} input_attributes_response_t;
+
 #pragma pack(pop)
 
 // ============================================================================
