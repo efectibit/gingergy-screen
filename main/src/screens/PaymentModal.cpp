@@ -322,12 +322,30 @@ void PaymentModal::clearPin() {
 
 void PaymentModal::updatePinDisplay() {
 	if (!m_lblPinField) return;
-	char displayStr[16] = "";
-	for (int i = 0; i < m_pinLen; i++) {
-		displayStr[i] = '*';
+
+	if (m_pinLen == 0) {
+		lv_label_set_text(m_lblPinField, "");
+		return;
 	}
-	displayStr[m_pinLen] = '\0';
-	lv_label_set_text(m_lblPinField, displayStr);
+
+	char formattedStr[32] = ""; // Suficiente espacio para 9 dígitos + 2 espacios + null
+	int writeIdx = 0;
+
+	for (int i = 0; i < m_pinLen; i++) {
+		// ¿Cuántos dígitos quedan por escribir (incluyendo el actual)?
+		int remaining = m_pinLen - i;
+
+		// Si es un múltiplo de 3 y no es el primer carácter que escribimos, añadir espacio
+		// Pero la regla es "cada 3 desde la derecha". 
+		// Ej 7 dígitos: [D] [DDD] [DDD] -> Espacio si remaining % 3 == 0 y NO es el inicio.
+		if (remaining % 3 == 0 && i > 0) {
+			formattedStr[writeIdx++] = ' ';
+		}
+		formattedStr[writeIdx++] = m_pinBuffer[i];
+	}
+	formattedStr[writeIdx] = '\0';
+
+	lv_label_set_text(m_lblPinField, formattedStr);
 }
 
 void PaymentModal::showError(const char* msg) {

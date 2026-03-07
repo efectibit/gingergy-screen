@@ -86,7 +86,7 @@ private:
 	lv_obj_t* m_confirmMbox;        ///< MsgBox de confirmación (si está abierto)
 	lv_obj_t* m_confirmMboxOverlay; ///< Overlay que bloquea el fondo
 
-	static constexpr uint8_t PIN_MAX_LEN = 6;
+	static constexpr uint8_t PIN_MAX_LEN = 9;
 	char    m_pinBuffer[PIN_MAX_LEN + 1];
 	uint8_t m_pinLen;
 
