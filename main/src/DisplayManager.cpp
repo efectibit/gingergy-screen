@@ -150,7 +150,7 @@ void DisplayManager::init() {
 // =============================================================================
 // startGuiTask() — Arranca la tarea FreeRTOS de LVGL en el Core 1
 // =============================================================================
-void DisplayManager::startGuiTask(std::function<void(lv_display_t*)> uiReadyCb) {
+void DisplayManager::startGuiTask(UiReadyCallback uiReadyCb) {
 	m_uiReadyCb = uiReadyCb;
 	// Pasar `this` como parámetro para que guiTaskFn pueda acceder a la instancia
 	xTaskCreatePinnedToCore(guiTaskFn, "lvgl_gui", 4096 * 3,

@@ -26,13 +26,12 @@
  */
 class PaymentModal {
 public:
+	using PinValidateCallback = std::function<void(ChargePoint*, uint32_t)>;
+
 	/**
 	 * @param onValidate  Callback invocado tras enviar el PIN exitosamente.
 	 */
-	/**
-	 * @param onValidate  Callback invocado tras enviar el PIN exitosamente.
-	 */
-	PaymentModal(std::function<void(ChargePoint*, uint32_t)> onValidate);
+	PaymentModal(PinValidateCallback onValidate);
 
 	/**
 	 * @brief Muestra el modal sobre la pantalla dada.
@@ -96,6 +95,6 @@ private:
 	char    m_pinBuffer[PIN_MAX_LEN + 1];
 	uint8_t m_pinLen;
 
-	ChargePoint*                      m_activePoint;
-	std::function<void(ChargePoint*, uint32_t)> m_onValidate;
+	ChargePoint*          m_activePoint;
+	PinValidateCallback m_onValidate;
 };

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-PaymentModal::PaymentModal(std::function<void(ChargePoint*, uint32_t)> onValidate)
+PaymentModal::PaymentModal(PinValidateCallback onValidate)
 	: m_modal(nullptr)
 	, m_lblTitle(nullptr)
 	, m_lblMinutes(nullptr)

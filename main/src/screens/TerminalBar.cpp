@@ -1,7 +1,7 @@
 #include "screens/TerminalBar.hpp"
 
 TerminalBar::TerminalBar(std::vector<ChargePoint>& chargePoints,
-						 std::function<void(uint8_t)> onSelect)
+						 SelectCallback onSelect)
 	: m_chargePoints(chargePoints)
 	, m_onSelect(onSelect)
 	, m_container(nullptr)

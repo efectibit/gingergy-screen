@@ -18,11 +18,13 @@
  */
 class TimeSelectionScreen {
 public:
+	using ConfirmCallback = std::function<void(ChargePoint*)>;
+
 	/**
 	 * @param onConfirm  Callback invocado cuando el usuario presiona [USAR].
 	 *                   Recibe el puntero al ChargePoint activo.
 	 */
-	explicit TimeSelectionScreen(std::function<void(ChargePoint*)> onConfirm);
+	explicit TimeSelectionScreen(ConfirmCallback onConfirm);
 
 	/**
 	 * @brief Construye los widgets LVGL sobre la pantalla dada.
@@ -70,6 +72,6 @@ private:
 	lv_obj_t* m_arrowLeft;
 	lv_obj_t* m_arrowRight;
 
-	ChargePoint*                     m_activePoint;
-	std::function<void(ChargePoint*)> m_onConfirm;
+	ChargePoint*    m_activePoint;
+	ConfirmCallback m_onConfirm;
 };

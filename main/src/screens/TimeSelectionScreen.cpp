@@ -1,7 +1,7 @@
 #include "screens/TimeSelectionScreen.hpp"
 #include <stdio.h> // para snprintf
 
-TimeSelectionScreen::TimeSelectionScreen(std::function<void(ChargePoint*)> onConfirm)
+TimeSelectionScreen::TimeSelectionScreen(ConfirmCallback onConfirm)
 	: m_lblTerminal(nullptr)
 	, m_arc(nullptr)
 	, m_lblTimeMain(nullptr)

@@ -29,6 +29,8 @@
  */
 class DisplayManager {
 public:
+	using UiReadyCallback = std::function<void(lv_display_t*)>;
+
 	DisplayManager();
 
 	/**
@@ -49,7 +51,7 @@ public:
 	 * @param uiReadyCb  Callback invocado una vez que LVGL está listo.
 	 *                   Recibe el puntero al display LVGL.
 	 */
-	void startGuiTask(std::function<void(lv_display_t*)> uiReadyCb);
+	void startGuiTask(UiReadyCallback uiReadyCb);
 
 	/** @brief Toma el mutex de LVGL (bloquea hasta obtenerlo). */
 	void lock();
@@ -77,6 +79,6 @@ private:
 	lv_display_t*                       m_lvglDisplay;
 	lv_indev_t*                         m_lvglIndev;
 	SemaphoreHandle_t                   m_guiSemaphore;
-	esp_timer_handle_t                  m_tickTimer;
-	std::function<void(lv_display_t*)>  m_uiReadyCb;
+	esp_timer_handle_t m_tickTimer;
+	UiReadyCallback    m_uiReadyCb;
 };

@@ -18,13 +18,15 @@
  */
 class TerminalBar {
 public:
+	using SelectCallback = std::function<void(uint8_t)>;
+
 	/**
 	 * @param chargePoints  Referencia al vector de puntos de carga.
 	 * @param onSelect      Callback invocado cuando el usuario toca un ícono.
 	 *                      Recibe el id del ChargePoint seleccionado.
 	 */
 	TerminalBar(std::vector<ChargePoint>& chargePoints,
-				std::function<void(uint8_t)> onSelect);
+				SelectCallback onSelect);
 
 	/**
 	 * @brief Construye los widgets LVGL sobre la pantalla dada.
@@ -47,8 +49,8 @@ public:
 private:
 	static void onIconClickedCb(lv_event_t* e);
 
-	std::vector<ChargePoint>&    m_chargePoints;
-	std::function<void(uint8_t)> m_onSelect;
+	std::vector<ChargePoint>& m_chargePoints;
+	SelectCallback           m_onSelect;
 
 	lv_obj_t*              m_container;
 	std::vector<lv_obj_t*> m_icons;   ///< Un ícono por ChargePoint
