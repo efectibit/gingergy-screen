@@ -107,7 +107,7 @@ const mb_parameter_descriptor_t ControlBoardProxy::m_deviceParameters[CID_COUNT]
         CID_INPUT_ALL_STATUS,
         (char*)"AllStatusBulk", (char*)"--",
         1, MB_PARAM_INPUT,
-        0x3000, MAX_TERMINALS * 3,     // Reg Start = 0x3000, Size = 30
+        0x0500, MAX_TERMINALS * 3,     // Reg Start = 0x0500, Size = 30
         MB_OFFSET(input_all_status_response_t, terminals),
         PARAM_TYPE_ASCII,
         sizeof(input_all_status_response_t),
