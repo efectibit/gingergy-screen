@@ -195,6 +195,12 @@ void App::onPaymentValidate(ChargePoint* cp, uint32_t pin) {
 			cp->resetTime();
 			m_terminalBar->refreshIcon(cp->getId());
 			m_selectionScreen->updateDisplay();
+
+			// Sync all charge points status for update icons and data
+			this->syncChargePointStatus();
+			for (size_t i = 1; i <= m_chargePoints.size(); ++i) {
+				this->m_terminalBar->refreshIcon(i);
+			}
 		}
 		else {
 			ESP_LOGW(TAG_APP, "PIN incorrecto para terminal %d", cp->getId());
