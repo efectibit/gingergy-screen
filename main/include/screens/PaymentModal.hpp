@@ -95,9 +95,8 @@ private:
 	lv_obj_t* m_btnCancel;
 	lv_obj_t* m_numpadMatrix;
 	lv_obj_t* m_confirmMbox;        ///< MsgBox de confirmación (si está abierto)
-	lv_obj_t* m_confirmMboxOverlay; ///< Overlay que bloquea el fondo
 	lv_obj_t* m_wrongPinMbox;
-	lv_obj_t* m_wrongPinMboxOverlay;
+	lv_obj_t* m_mboxOverlay;        ///< Overlay genérico para bloquear el fondo
 
 	static constexpr uint8_t PIN_MAX_LEN = 9;
 	char    m_pinBuffer[PIN_MAX_LEN + 1];

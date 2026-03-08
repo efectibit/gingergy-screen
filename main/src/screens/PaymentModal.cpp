@@ -14,9 +14,8 @@ PaymentModal::PaymentModal(PinValidateCallback onValidate)
 	, m_btnCancel(nullptr)
 	, m_numpadMatrix(nullptr)
 	, m_confirmMbox(nullptr)
-	, m_confirmMboxOverlay(nullptr)
 	, m_wrongPinMbox(nullptr)
-	, m_wrongPinMboxOverlay(nullptr)
+	, m_mboxOverlay(nullptr)
 	, m_pinLen(0)
 	, m_activePoint(nullptr)
 	, m_onValidate(onValidate)
@@ -178,9 +177,8 @@ void PaymentModal::hide() {
 	m_btnCancel = nullptr;
 	m_numpadMatrix = nullptr;
 	m_confirmMbox = nullptr;
-	m_confirmMboxOverlay = nullptr;
 	m_wrongPinMbox = nullptr;
-	m_wrongPinMboxOverlay = nullptr;
+	m_mboxOverlay = nullptr;
 
 	clearPin();
 }
@@ -267,12 +265,12 @@ void PaymentModal::showConfirmDialog() {
 	if (m_confirmMbox) return; // Ya existe uno abierto, no hacemos nada
 
 	// Creamos un overlay transparente que ocupe todo m_modal para bloquear clics de fondo
-	m_confirmMboxOverlay = lv_obj_create(m_modal);
-	lv_obj_set_size(m_confirmMboxOverlay, 600, 420);
-	lv_obj_set_style_bg_color(m_confirmMboxOverlay, lv_color_black(), 0);
-	lv_obj_set_style_bg_opa(m_confirmMboxOverlay, LV_OPA_70, 0);
-	lv_obj_set_style_border_width(m_confirmMboxOverlay, 0, 0);
-	lv_obj_add_flag(m_confirmMboxOverlay, LV_OBJ_FLAG_CLICKABLE); // Asegurar que capture clics
+	m_mboxOverlay = lv_obj_create(m_modal);
+	lv_obj_set_size(m_mboxOverlay, 600, 420);
+	lv_obj_set_style_bg_color(m_mboxOverlay, lv_color_black(), 0);
+	lv_obj_set_style_bg_opa(m_mboxOverlay, LV_OPA_70, 0);
+	lv_obj_set_style_border_width(m_mboxOverlay, 0, 0);
+	lv_obj_add_flag(m_mboxOverlay, LV_OBJ_FLAG_CLICKABLE); // Asegurar que capture clics
 
 	m_confirmMbox = lv_msgbox_create(m_modal);
 	lv_msgbox_add_title(m_confirmMbox, "Confirmación");
@@ -287,7 +285,7 @@ void PaymentModal::showConfirmDialog() {
 
 	// Centrar en pantalla
 	lv_obj_center(m_confirmMbox);
-	lv_obj_center(m_confirmMboxOverlay);
+	lv_obj_center(m_mboxOverlay);
 }
 
 void PaymentModal::onConfirmYesPressedCb(lv_event_t* e) {
@@ -302,9 +300,9 @@ void PaymentModal::onConfirmNoPressedCb(lv_event_t* e) {
 		lv_msgbox_close(self->m_confirmMbox);
 		self->m_confirmMbox = nullptr;
 	}
-	if (self->m_confirmMboxOverlay) {
-		lv_obj_delete(self->m_confirmMboxOverlay);
-		self->m_confirmMboxOverlay = nullptr;
+	if (self->m_mboxOverlay) {
+		lv_obj_delete(self->m_mboxOverlay);
+		self->m_mboxOverlay = nullptr;
 	}
 }
 
@@ -369,12 +367,12 @@ void PaymentModal::showWrongPinMessage() {
 	if (m_wrongPinMbox) return;
 
 	// Overlay para bloquear fondo
-	m_wrongPinMboxOverlay = lv_obj_create(m_modal);
-	lv_obj_set_size(m_wrongPinMboxOverlay, 600, 420);
-	lv_obj_set_style_bg_color(m_wrongPinMboxOverlay, lv_color_black(), 0);
-	lv_obj_set_style_bg_opa(m_wrongPinMboxOverlay, LV_OPA_70, 0);
-	lv_obj_set_style_border_width(m_wrongPinMboxOverlay, 0, 0);
-	lv_obj_add_flag(m_wrongPinMboxOverlay, LV_OBJ_FLAG_CLICKABLE);
+	m_mboxOverlay = lv_obj_create(m_modal);
+	lv_obj_set_size(m_mboxOverlay, 600, 420);
+	lv_obj_set_style_bg_color(m_mboxOverlay, lv_color_black(), 0);
+	lv_obj_set_style_bg_opa(m_mboxOverlay, LV_OPA_70, 0);
+	lv_obj_set_style_border_width(m_mboxOverlay, 0, 0);
+	lv_obj_add_flag(m_mboxOverlay, LV_OBJ_FLAG_CLICKABLE);
 
 	m_wrongPinMbox = lv_msgbox_create(m_modal);
 	lv_msgbox_add_title(m_wrongPinMbox, "PIN incorrecto");
@@ -392,7 +390,7 @@ void PaymentModal::showWrongPinMessage() {
 	lv_obj_t* btn = lv_msgbox_add_footer_button(m_wrongPinMbox, "Aceptar");
 	lv_obj_add_event_cb(btn, onWrongPinOkCb, LV_EVENT_CLICKED, this);
 
-	lv_obj_center(m_wrongPinMboxOverlay);
+	lv_obj_center(m_mboxOverlay);
 	lv_obj_center(m_wrongPinMbox);
 }
 
@@ -403,9 +401,9 @@ void PaymentModal::onWrongPinOkCb(lv_event_t* e) {
 		lv_msgbox_close(self->m_wrongPinMbox);
 		self->m_wrongPinMbox = nullptr;
 	}
-	if (self->m_wrongPinMboxOverlay) {
-		lv_obj_delete(self->m_wrongPinMboxOverlay);
-		self->m_wrongPinMboxOverlay = nullptr;
+	if (self->m_mboxOverlay) {
+		lv_obj_delete(self->m_mboxOverlay);
+		self->m_mboxOverlay = nullptr;
 	}
 
 	self->clearPin();
