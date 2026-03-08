@@ -15,6 +15,8 @@ PaymentModal::PaymentModal(PinValidateCallback onValidate)
 	, m_numpadMatrix(nullptr)
 	, m_confirmMbox(nullptr)
 	, m_confirmMboxOverlay(nullptr)
+	, m_wrongPinMbox(nullptr)
+	, m_wrongPinMboxOverlay(nullptr)
 	, m_pinLen(0)
 	, m_activePoint(nullptr)
 	, m_onValidate(onValidate)
@@ -177,6 +179,8 @@ void PaymentModal::hide() {
 	m_numpadMatrix = nullptr;
 	m_confirmMbox = nullptr;
 	m_confirmMboxOverlay = nullptr;
+	m_wrongPinMbox = nullptr;
+	m_wrongPinMboxOverlay = nullptr;
 
 	clearPin();
 }
@@ -359,4 +363,50 @@ void PaymentModal::showError(const char* msg) {
 	if (m_lblError) {
 		lv_label_set_text(m_lblError, msg);
 	}
+}
+
+void PaymentModal::showWrongPinMessage() {
+	if (m_wrongPinMbox) return;
+
+	// Overlay para bloquear fondo
+	m_wrongPinMboxOverlay = lv_obj_create(m_modal);
+	lv_obj_set_size(m_wrongPinMboxOverlay, 600, 420);
+	lv_obj_set_style_bg_color(m_wrongPinMboxOverlay, lv_color_black(), 0);
+	lv_obj_set_style_bg_opa(m_wrongPinMboxOverlay, LV_OPA_70, 0);
+	lv_obj_set_style_border_width(m_wrongPinMboxOverlay, 0, 0);
+	lv_obj_add_flag(m_wrongPinMboxOverlay, LV_OBJ_FLAG_CLICKABLE);
+
+	m_wrongPinMbox = lv_msgbox_create(m_modal);
+	lv_msgbox_add_title(m_wrongPinMbox, "PIN incorrecto");
+	
+	// Estilizar la barra de título (header) en rojo
+	lv_obj_t* header = lv_msgbox_get_header(m_wrongPinMbox);
+	if (header) {
+		lv_obj_set_style_bg_color(header, lv_palette_main(LV_PALETTE_RED), 0);
+		lv_obj_set_style_bg_opa(header, LV_OPA_COVER, 0);
+		lv_obj_set_style_text_color(header, lv_color_white(), 0);
+	}
+
+	lv_msgbox_add_text(m_wrongPinMbox, "El PIN ingresado no es válido. Por favor, reintente.");
+
+	lv_obj_t* btn = lv_msgbox_add_footer_button(m_wrongPinMbox, "Aceptar");
+	lv_obj_add_event_cb(btn, onWrongPinOkCb, LV_EVENT_CLICKED, this);
+
+	lv_obj_center(m_wrongPinMboxOverlay);
+	lv_obj_center(m_wrongPinMbox);
+}
+
+void PaymentModal::onWrongPinOkCb(lv_event_t* e) {
+	auto* self = static_cast<PaymentModal*>(lv_event_get_user_data(e));
+	
+	if (self->m_wrongPinMbox) {
+		lv_msgbox_close(self->m_wrongPinMbox);
+		self->m_wrongPinMbox = nullptr;
+	}
+	if (self->m_wrongPinMboxOverlay) {
+		lv_obj_delete(self->m_wrongPinMboxOverlay);
+		self->m_wrongPinMboxOverlay = nullptr;
+	}
+
+	self->clearPin();
 }

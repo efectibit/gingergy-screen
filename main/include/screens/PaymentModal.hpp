@@ -56,6 +56,11 @@ public:
 	 */
 	void updatePrice(uint32_t priceRaw);
 
+	/**
+	 * @brief Muestra un mensaje de PIN incorrecto.
+	 */
+	void showWrongPinMessage();
+
 private:
 	// --- Construcción de sub-secciones ---
 	void buildQR(uint8_t* payload, size_t len);
@@ -69,6 +74,7 @@ private:
 	static void onCancelPressedCb(lv_event_t* e);
 	static void onConfirmYesPressedCb(lv_event_t* e);
 	static void onConfirmNoPressedCb(lv_event_t* e);
+	static void onWrongPinOkCb      (lv_event_t* e);
 
 	// --- Helpers ---
 	void showConfirmDialog();
@@ -90,6 +96,8 @@ private:
 	lv_obj_t* m_numpadMatrix;
 	lv_obj_t* m_confirmMbox;        ///< MsgBox de confirmación (si está abierto)
 	lv_obj_t* m_confirmMboxOverlay; ///< Overlay que bloquea el fondo
+	lv_obj_t* m_wrongPinMbox;
+	lv_obj_t* m_wrongPinMboxOverlay;
 
 	static constexpr uint8_t PIN_MAX_LEN = 9;
 	char    m_pinBuffer[PIN_MAX_LEN + 1];

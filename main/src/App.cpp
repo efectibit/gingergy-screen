@@ -189,14 +189,19 @@ void App::onPaymentValidate(ChargePoint* cp, uint32_t pin) {
 	if (workMode == ChargeWorkMode::DONE) {
 		vTaskDelay(pdMS_TO_TICKS(100));
 		bool validPin = this->m_proxy.readValidPin(cp);
+		m_display.lock();
 		if (validPin) { 
-			m_display.lock();
 			m_paymentModal->hide();
 			cp->resetTime();
 			m_terminalBar->refreshIcon(cp->getId());
 			m_selectionScreen->updateDisplay();
-			m_display.unlock();	
 		}
+		else {
+			ESP_LOGW(TAG_APP, "PIN incorrecto para terminal %d", cp->getId());
+			m_paymentModal->showWrongPinMessage();
+			vTaskDelay(pdMS_TO_TICKS(2000));
+		}
+		m_display.unlock();	
 	}
 }
 
